@@ -1,6 +1,6 @@
 # 🚀 ACL Padrão com Filament
 
-Este repositório contém um projeto Laravel 12 que implementa um sistema de Controle de Lista de Acesso (ACL) utilizando o painel administrativo Filament e o pacote Spatie Permission. O objetivo é fornecer uma base sólida para gerenciamento de usuários, papéis (roles) e permissões.
+Este repositório contém um projeto Laravel 12 que implementa um sistema de Controle de Lista de Acesso (ACL) utilizando o painel administrativo Filament e o pacote Spatie Permission. O objetivo é fornecer uma base sólida para gerenciamento de usuários, e coleta de informações relacionadas a Secretaria de Educação.
 
 ## 📜 Visão Geral
 
@@ -9,30 +9,6 @@ Este repositório contém um projeto Laravel 12 que implementa um sistema de Con
 *   **Controle de Acesso:** Spatie Laravel Permission 6.x
 *   **Login Social:** Dutch Coding Company Filament Socialite
 *   **PHP:** 8.2+
-
-O projeto oferece uma estrutura organizada para gerenciar o acesso a diferentes partes da sua aplicação, facilitando a criação de interfaces administrativas com Filament e permitindo login via Google.
-
-## 🔑 Lógica de Permissões (Spatie Permission)
-
-Este projeto utiliza o pacote `spatie/laravel-permission` para gerenciar o controle de acesso. A lógica principal se baseia em três componentes:
-
-1.  **Usuários (Users):** Representam os indivíduos que interagem com o sistema.
-2.  **Papéis (Roles):** Agrupam um conjunto de permissões. Funcionam como "funções" ou "cargos" dentro do sistema (ex: Administrador, Editor, Visitante).
-3.  **Permissões (Permissions):** Definem ações específicas que podem ou não ser realizadas (ex: `criar post`, `editar usuário`, `ver relatório`).
-
-A relação funciona da seguinte maneira:
-
-*   Um **Usuário** pode ter um ou mais **Papéis** atribuídos.
-*   Um **Papel** possui uma ou mais **Permissões** associadas a ele.
-*   O sistema verifica se um **Usuário** tem uma determinada **Permissão**. Essa verificação pode ser direta (permissão atribuída diretamente ao usuário) ou, mais comumente, indireta: o sistema verifica se algum dos **Papéis** do usuário possui a **Permissão** necessária.
-
-**Exemplo:**
-
-*   O usuário "João" tem o papel "Editor".
-*   O papel "Editor" tem as permissões "criar post" e "editar post".
-*   Quando João tenta criar um post, o sistema verifica: João tem a permissão "criar post"? Sim, pois ele tem o papel "Editor", que por sua vez possui essa permissão.
-
-Essa estrutura oferece flexibilidade para gerenciar o acesso de forma granular e organizada.
 
 ## 🛠️ Pré-requisitos
 
@@ -44,8 +20,10 @@ Antes de começar, garanta que seu ambiente de desenvolvimento atenda aos seguin
     ```
 *   **Composer:** Gerenciador de dependências para PHP. ([Instrução de Instalação](https://getcomposer.org/))
 *   **Conexão com a Internet:** Para baixar as dependências.
-*   **Banco de Dados:** Um SGBD compatível com Laravel (MySQL, PostgreSQL, SQLite, etc.).
+*   **Banco de Dados:** Um SGBD compatível com Laravel (MySQL por exemplo).
 *   **Configuração PHP.INI:** Verifique a seção específica sobre `php.ini` abaixo.
+*   **Docker** Para orquestração de containers, versão utilizada: **Docker version 27.5.1, build 27.5.1-0ubuntu3~24.04.2**
+*   
 
 ## ⚙️ Configuração do PHP (php.ini)
 
@@ -54,7 +32,7 @@ Para garantir o correto funcionamento da aplicação e de suas dependências (co
 **Recomendações:**
 
 *   **Extensões Essenciais:** Certifique-se de que extensões comuns para Laravel estejam habilitadas. Exemplos incluem: `pdo_mysql` (ou o driver do seu banco), `mbstring`, `xml`, `curl`, `gd`, `zip`, `fileinfo`, `openssl`.
-*   **Limites de Recursos:** Ajuste diretivas como `memory_limit`, `max_execution_time`, `upload_max_filesize`, `post_max_size` conforme as necessidades da sua aplicação. Valores muito baixos podem causar erros inesperados.
+*   **Limites de Recursos:** Ajuste diretivas como `memory_limit`, `max_execution_time`, `upload_max_filesize`, `post_max_size` conforme as necessidades da sua aplicação, para melhor acoplamento de memória cache entre outras especificações. Valores muito baixos podem causar erros inesperados.
 *   **Arquivo de Referência:** Um arquivo `php.ini` com configurações adequadas para desenvolvimento foi fornecido como referência. Você pode comparar com o seu `php.ini` ativo ou utilizá-lo como base. Para localizar o `php.ini` ativo no seu sistema, execute:
     ```bash
     php --ini
@@ -68,33 +46,21 @@ Siga estas etapas para configurar o projeto localmente:
 1.  **Clonar o Repositório:**
     Obtenha o código-fonte do projeto.
     ```bash
-    git clone https://github.com/GabrielCapoia-Dev/ACL-Padrao-Filament.git
+    https://github.com/GabrielCapoia-Dev/SRM-gestao.git
     ```
     Ou baixe o ZIP diretamente do GitHub.
 
 2.  **Navegar para o Diretório:**
     Entre na pasta do projeto recém-clonado.
     ```bash
-    cd ACL-Padrao-Filament
+    cd SME-gestao
     ```
 
-3.  **Instalar Dependências:**
-    Use o Composer para instalar os pacotes PHP necessários.
-    ```bash
-    composer install
-    ```
-
-4.  **Configurar Variáveis de Ambiente (.env):**
+3.  **Configurar Variáveis de Ambiente (.env):**
     Copie o arquivo de exemplo `.env.example` para `.env`.
-    ```bash
-    # Linux / macOS
-    cp .env.example .env
 
-    # Windows (prompt de comando)
-    copy .env.example .env
-    ```
     Abra o arquivo `.env` e configure as variáveis principais:
-    *   **Banco de Dados:** Configure `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` de acordo com seu ambiente.
+    *   **Banco de Dados:** Configure `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` de acordo com seu ambiente ou seguindo a configuração ja aplicada compativel com o *docker-compose.yml* do projeto.
     *   **URL da Aplicação:** Defina `APP_URL` para a URL base da sua aplicação (ex: `APP_URL=http://localhost:8000`).
 
     #### Configuração Adicional: Login Social com Google
