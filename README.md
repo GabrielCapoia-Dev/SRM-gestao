@@ -73,7 +73,7 @@ Siga estas etapas para configurar o projeto localmente:
     ```
     Acesse o bash da aplicação
     ```bash
-    docker exec -it laravel-app-sme-gestao bash
+    docker exec -it laravel-app-srm-gestao bash
     ```
     Dentro do container execute:
     ```bash
@@ -90,7 +90,7 @@ Siga estas etapas para configurar o projeto localmente:
     
     Acesse o bash da aplicação
     ```bash
-    docker exec -it laravel-app-sme-gestao bash
+    docker exec -it laravel-app-srm-gestao bash
     ```
     
     ```bash
