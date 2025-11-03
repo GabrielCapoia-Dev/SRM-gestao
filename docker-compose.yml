@@ -3,28 +3,44 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: laravel-app-transporte
-    container_name: laravel-app-transporte
-    working_dir: /var/www
-    ports:
-      - "8000:8000"
+    image: laravel-app-srm-gestao
+    container_name: laravel-app-srm-gestao
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: srm-gestao
+      DB_USERNAME: root
+      DB_PASSWORD: root
     volumes:
-      - .:/var/www
-      - vendor:/var/www/vendor
-      - node_modules:/var/www/node_modules
-    command: sh -lc "php artisan serve --host=0.0.0.0 --port=8000"
+      - app_code:/var/www
+      - app_storage:/var/www/storage
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - laravel_transporte
+    networks: [ laravel_srm-gestao ]
+
+  nginx:
+    image: nginx:alpine
+    container_name: laravel-nginx-srm-gestao
+    ports:
+      - "8000:80"
+    volumes:
+      - app_code:/var/www:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - app
+    networks: [ laravel_srm-gestao ]
 
   db:
     image: mysql:8.0
-    container_name: laravel-db-transporte
+    container_name: laravel-db-srm-gestao
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: transporte
+      MYSQL_DATABASE: srm-gestao
     volumes:
       - db_data:/var/lib/mysql
     ports:
@@ -34,12 +50,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-    networks:
-      - laravel_transporte
+    networks: [ laravel_srm-gestao ]
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: laravel-phpmyadmin-transporte
+    container_name: laravel-phpmyadmin-srm-gestao
     environment:
       PMA_HOST: db
       PMA_USER: root
@@ -49,15 +64,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - laravel_transporte
+    networks: [ laravel_srm-gestao ]
 
 volumes:
   db_data:
-  vendor:
-  node_modules:
-
+  app_code:
+  app_storage:
 
 networks:
-  laravel_transporte:
+  laravel_srm-gestao:
     driver: bridge

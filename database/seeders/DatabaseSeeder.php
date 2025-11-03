@@ -39,10 +39,6 @@ class DatabaseSeeder extends Seeder
             'Criar Séries',
             'Editar Séries',
             'Excluir Séries',
-            'Listar Veículos',
-            'Criar Veículos',
-            'Editar Veículos',
-            'Excluir Veículos',
             'Listar Escolas',
             'Criar Escolas',
             'Editar Escolas',
@@ -55,31 +51,6 @@ class DatabaseSeeder extends Seeder
             'Criar Alunos',
             'Editar Alunos',
             'Excluir Alunos',
-            'Listar Rotas',
-            'Criar Rotas',
-            'Editar Rotas',
-            'Excluir Rotas',
-        ];
-
-        $secretarioPermissionsList = [
-            'Listar Usuários',
-            'Criar Usuários',
-            'Editar Usuários',
-            'Excluir Usuários',
-            'Listar Turmas',
-            'Criar Turmas',
-            'Editar Turmas',
-            'Excluir Turmas',
-            'Listar Alunos',
-            'Criar Alunos',
-            'Editar Alunos',
-            'Excluir Alunos',
-        ];
-
-        $usuarioPermissionsList = [
-            'Listar Turmas',
-            'Listar Alunos',
-            'Editar Alunos',
         ];
 
         $password = "Senha@123";
@@ -91,13 +62,9 @@ class DatabaseSeeder extends Seeder
 
         // Criação da rule Admin
         $adminRole = Role::firstOrCreate(['name' => 'Admin']);
-        $secretarioRole = Role::firstOrCreate(['name' => 'Secretario']);
-        $usuarioRole = Role::firstOrCreate(['name' => 'Usuario']);
 
         // Atribui todas as permissões à role Admin
         $adminRole->syncPermissions($permissionsList);
-        $secretarioRole->syncPermissions($secretarioPermissionsList);
-        $usuarioRole->syncPermissions($usuarioPermissionsList);
 
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@admin.com'],
@@ -109,30 +76,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $secretarioUser = User::firstOrCreate(
-            ['email' => 'secretario@secretario.com'],
-            [
-                'name' => 'Secretario',
-                'password' => Hash::make($password),
-                'email_verified_at' => now(),
-                'email_approved' => true
-            ]
-        );
-
-        $usuarioUser = User::firstOrCreate(
-            ['email' => 'usuario@usuario.com'],
-            [
-                'name' => 'Usuario',
-                'password' => Hash::make($password),
-                'email_verified_at' => now(),
-                'email_approved' => true
-            ]
-        );
-
         $adminUser->assignRole($adminRole);
-        $secretarioUser->assignRole($secretarioRole);
-        $usuarioUser->assignRole($usuarioRole);
-
 
         /**
          * Criar domínios de email
