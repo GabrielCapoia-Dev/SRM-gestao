@@ -40,10 +40,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(DominioEmail::class, DominioEmailPolicy::class);
-        Gate::policy(Serie::class, SeriePolicy::class);
-        Gate::policy(Escola::class, EscolaPolicy::class);
-        Gate::policy(Turma::class, TurmaPolicy::class);
-        Gate::policy(Aluno::class, AlunoPolicy::class);
+        // Gate::policy(Escola::class, EscolaPolicy::class);
         Gate::define('admin-only', function ($user) {
             return $user->hasRole('Admin');
         });
