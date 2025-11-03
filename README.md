@@ -108,7 +108,7 @@ Siga estas etapas para configurar o projeto localmente:
 1.  Abra seu navegador e acesse a URL da aplicação seguida de `/admin` (ex: `http://127.0.0.1:8000/admin`).
 2.  Utilize as credenciais padrão criadas pelo seeder:
     *   **Email:** `admin@admin.com`
-    *   **Senha:** `123456`
+    *   **Senha:** `Senha@123`
 3.  Após o login, você terá acesso ao painel do Filament para gerenciar usuários, papéis e permissões.
 
 ## 🖼️ Telas do Projeto
