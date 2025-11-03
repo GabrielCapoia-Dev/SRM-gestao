@@ -5,35 +5,19 @@ services:
       dockerfile: Dockerfile
     image: laravel-app-srm-gestao
     container_name: laravel-app-srm-gestao
-    environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_URL: http://localhost
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: srm-gestao
-      DB_USERNAME: root
-      DB_PASSWORD: root
+    working_dir: /var/www
+    ports:
+      - "8000:8000"
     volumes:
-      - app_code:/var/www
-      - app_storage:/var/www/storage
+      - .:/var/www
+      - vendor:/var/www/vendor
+      - node_modules:/var/www/node_modules
+    command: sh -lc "php artisan serve --host=0.0.0.0 --port=8000"
     depends_on:
       db:
         condition: service_healthy
-    networks: [ laravel_srm-gestao ]
-
-  nginx:
-    image: nginx:alpine
-    container_name: laravel-nginx-srm-gestao
-    ports:
-      - "8000:80"
-    volumes:
-      - app_code:/var/www:ro
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-    depends_on:
-      - app
-    networks: [ laravel_srm-gestao ]
+    networks:
+      - laravel_srm-gestao
 
   db:
     image: mysql:8.0
@@ -50,7 +34,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-    networks: [ laravel_srm-gestao ]
+    networks:
+      - laravel_srm-gestao
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -64,12 +49,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks: [ laravel_srm-gestao ]
+    networks:
+      - laravel_srm-gestao
 
 volumes:
   db_data:
-  app_code:
-  app_storage:
+  vendor:
+  node_modules:
+
 
 networks:
   laravel_srm-gestao:
