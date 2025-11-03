@@ -14,17 +14,26 @@ class EscolaResource extends Resource
 {
     protected static ?string $model = Escola::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
+    public static ?string $modelLabel = 'Escola';
+    protected static ?string $navigationGroup = "Gerenciamento Escolar";
+    public static ?string $pluralModelLabel = 'Escolas';
+    public static ?string $slug = 'escolas';
+
+    protected static function service(): Service
+    {
+        return app(Service::class);
+    }
 
     public static function form(Form $form): Form
     {
-        return app(Service::class)->configurarFormulario($form);
+        return static::service()->configurarFormulario($form);
     }
 
 
     public static function table(Table $table): Table
     {
-        return app(Service::class)->configurarTabela($table, Auth::user());
+        return static::service()->configurarTabela($table, Auth::user());
     }
 
     public static function getPages(): array
