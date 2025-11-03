@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Escola;
 use App\Models\IgnoredUser;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -80,6 +81,7 @@ class UserService
     private function desabilitarCampoRole(?User $user, ?User $record, string $context): bool
     {
         if ($context === 'create' || ! $record) return false;
+        if ($record->hasRole('Admin') && $user->id == 1) return false;
         if ($record->hasRole('Admin')) return true;
         if ($user && $record->id === $user->id) return true;
         return false;
@@ -115,7 +117,7 @@ class UserService
     }
 
 
-    private function podeDeletar(?User $user, User $record): bool
+    public function podeDeletar(?User $user, User $record): bool
     {
         if (! $user) return false;
         if ($record->id === 1) return false;
@@ -123,7 +125,7 @@ class UserService
         return $this->ehAdmin($user);
     }
 
-    private function podeDeletarEmLote(?User $user, iterable $records): bool
+    public function podeDeletarEmLote(?User $user, iterable $records): bool
     {
         if (!$this->ehAdmin($user)) return false;
         foreach ($records as $record) {
@@ -147,7 +149,7 @@ class UserService
                 ->required()
                 ->minLength(3)
                 ->maxLength(100)
-                ->rule('regex:/^\p{L}+(?:\s\p{L}+)*$/u')
+                ->rule('regex:/^[\p{L}\p{N}]+(?: [\p{L}\p{N}]+)*$/u')
                 ->validationMessages([
                     'regex' => 'Use apenas letras, sem caracteres especiais.',
                 ]),
@@ -206,8 +208,96 @@ class UserService
                     $this->podeVerToggleAprovacaoEmail(Auth::user(), $record, $context)
                 ),
 
+            Forms\Components\Section::make('Vínculo com Escola')
+                ->icon('heroicon-o-identification')
+                ->description('Aqui mostra se o usuário esta vinculado a uma escola.')
+                ->schema([
+                    Forms\Components\Select::make('id_escola')
+                        ->label('Escola')
+                        ->options(fn() => $this->opcoesDeEscolasParaCampo(Auth::user()))
+                        ->searchable()
+                        ->preload()
+                        ->afterStateHydrated(function ($state, callable $set, ?User $record, string $operation) {
+                            $set('id_escola', $this->escolaInicialParaForm($record, Auth::user(), $operation));
+                        })
+                        ->default(fn(?User $record) => $this->escolaInicialParaForm($record, Auth::user(), 'create'))
+                        ->disabled(fn(string $operation) => $this->deveTravarCampoEscola(Auth::user(), $operation))
+                        ->dehydrated(true),
+                ])
+                ->visible(
+                    fn(?User $record, string $context) =>
+                    $this->podeVerSecaoEscola(Auth::user(), $record, $context)
+                ),
         ];
     }
+    /** Opções para o select de Escola conforme quem está acessando */
+    public function opcoesDeEscolasParaCampo(?User $currentUser): array
+    {
+        if ($this->ehAdmin($currentUser)) {
+            return Escola::query()->orderBy('nome')->pluck('nome', 'id')->toArray();
+        }
+
+        if (filled($currentUser?->id_escola)) {
+            return Escola::query()->whereKey($currentUser->id_escola)->pluck('nome', 'id')->toArray();
+        }
+
+        return [];
+    }
+
+    private function podeVerSecaoEscola(?User $user, ?User $record, string $context): bool
+    {
+        if ($context === 'create') return true;
+        if (! $record) return false;
+        if ($record->hasRole('Admin')) return false;
+        if ($user && $record->id === $user->id) return false;
+        if ($context === 'edit') return true;
+        return false;
+    }
+
+    /**
+     * Deve travar o campo Escola?
+     * - Admin: nunca
+     * - Não-admin:
+     *    - create: se tem escola vinculada, TRAVA (para criar apenas na sua escola)
+     *    - edit: sempre TRAVA (não-admin não altera escola do usuário)
+     */
+    public function deveTravarCampoEscola(?User $currentUser, string $context): bool
+    {
+        if ($this->ehAdmin($currentUser)) {
+            return false;
+        }
+
+        if ($context === 'create' && filled($currentUser?->id_escola)) {
+            return true;
+        }
+
+        if ($context === 'edit') {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Valor inicial do campo Escola:
+     * - Edit: usa a escola do registro se houver; senão cai pro vínculo do usuário atual (se houver)
+     * - Create: se o usuário atual tem escola, usa ela; caso contrário, null (admin escolhe)
+     */
+    public function escolaInicialParaForm(?User $record, ?User $currentUser, string $context): ?int
+    {
+        if ($record && filled($record->id_escola)) {
+            return (int) $record->id_escola;
+        }
+
+        if ($context === 'create') {
+            return $currentUser?->id_escola ?? null;
+        }
+
+        return $currentUser?->id_escola ?? null;
+    }
+
+
 
 
 
@@ -222,12 +312,16 @@ class UserService
             ->bulkActions($this->acoesEmMassa($user))
             ->defaultSort('updated_at', 'desc')
             ->striped();
-
     }
 
     protected function colunasTabela(): array
     {
         return [
+            Tables\Columns\TextColumn::make('escola.nome')
+                ->label('Escola')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
 
             Tables\Columns\TextColumn::make('name')
                 ->label('Nome de usuário')

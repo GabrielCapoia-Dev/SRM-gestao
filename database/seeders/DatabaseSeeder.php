@@ -53,6 +53,25 @@ class DatabaseSeeder extends Seeder
             'Excluir Alunos',
         ];
 
+        $permissionsCoordenador = [
+            'Listar Usuários',
+            'Criar Usuários',
+            'Editar Usuários',
+            'Excluir Usuários',
+            'Listar Séries',
+            'Criar Séries',
+            'Editar Séries',
+            'Excluir Séries',
+            'Listar Turmas',
+            'Criar Turmas',
+            'Editar Turmas',
+            'Excluir Turmas',
+            'Listar Alunos',
+            'Criar Alunos',
+            'Editar Alunos',
+            'Excluir Alunos',
+        ];
+
         $password = "Senha@123";
 
         // Criação das permissões
@@ -62,9 +81,12 @@ class DatabaseSeeder extends Seeder
 
         // Criação da rule Admin
         $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $coordenadorRole = Role::firstOrCreate(['name' => 'Coordenador']);
 
         // Atribui todas as permissões à role Admin
         $adminRole->syncPermissions($permissionsList);
+        $coordenadorRole->syncPermissions($permissionsCoordenador);
+
 
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@admin.com'],
@@ -75,8 +97,18 @@ class DatabaseSeeder extends Seeder
                 'email_approved' => true
             ]
         );
+        $coordenadorUser = User::firstOrCreate(
+            ['email' => 'coordenador@coordenador.com'],
+            [
+                'name' => 'Coordenador',
+                'password' => Hash::make($password),
+                'email_verified_at' => now(),
+                'email_approved' => true
+            ]
+        );
 
         $adminUser->assignRole($adminRole);
+        $coordenadorUser->assignRole($coordenadorRole);
 
         /**
          * Criar domínios de email
