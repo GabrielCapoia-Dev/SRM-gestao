@@ -1,4 +1,4 @@
-# 🚀 ACL Padrão com Filament
+# 🚀 SRM-Gestão
 
 Este repositório contém um projeto Laravel 12 que implementa um sistema de Controle de Lista de Acesso (ACL) utilizando o painel administrativo Filament e o pacote Spatie Permission. O objetivo é fornecer uma base sólida para gerenciamento de usuários, e coleta de informações relacionadas a Secretaria de Educação.
 
