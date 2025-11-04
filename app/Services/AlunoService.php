@@ -115,10 +115,12 @@ class AlunoService
                                     Select::make('id_professor')
                                         ->label('Profissional de Apoio')
                                         ->relationship('professor', 'nome')
+                                        ->searchable()
+                                        ->preload()
                                         ->required()
                                 ]),
-                            ])
-                            ->columnSpan(1),
+                        ])
+                        ->columnSpan(1),
 
                     Fieldset::make('Laudo')
                         ->schema([

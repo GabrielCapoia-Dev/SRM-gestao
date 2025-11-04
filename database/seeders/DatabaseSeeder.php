@@ -137,6 +137,48 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->call([]);
+        /**
+         * Criar séries
+         */
+        $seriesList = [
+            'Infantil 4',
+            'Infantil 5',
+            '1º Ano',
+            '2º Ano',
+            '3º Ano',
+            '4º Ano',
+            '5º Ano',
+        ];
+
+        foreach ($seriesList as $seriesName) {
+            $codigo = $this->gerarCodigoSerie($seriesName);
+
+            // se já existe pelo nome, atualiza o código; senão, cria
+            Serie::updateOrCreate(
+                ['nome' => $seriesName],
+                ['codigo' => $codigo]
+            );
+        }
+
+        $this->call([
+            EscolaSeeder::class,
+            TurmaCodigoSeeder::class,
+        ]);
+    }
+
+    private function gerarCodigoSerie(string $nome): ?string
+    {
+        // Infantil 4/5 => SI4 / SI5
+        if (preg_match('/^Infantil\s*(4|5)$/iu', $nome, $m)) {
+            return 'SI' . $m[1];
+        }
+
+        // 1º ao 5º Ano => S1A ... S5A
+        if (preg_match('/^([1-5])º\s*Ano$/iu', $nome, $m)) {
+            return 'S' . $m[1] . 'A';
+        }
+
+        // fallback se aparecer algo fora do padrão
+        return null;
     }
 }

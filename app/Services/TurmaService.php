@@ -39,6 +39,11 @@ class TurmaService
     public function colunasTabela(): array
     {
         return [
+            TextColumn::make('codigo')
+                ->label('Código')
+                ->searchable()
+                ->sortable(),
+
             TextColumn::make('serie.nome')
                 ->label('Série')
                 ->searchable(),
@@ -104,7 +109,10 @@ class TurmaService
 
             SelectFilter::make('id_serie')
                 ->label('Série')
-                ->relationship('serie', 'nome'),
+                ->multiple()
+                ->searchable()
+                ->preload()
+                ->relationship('serie', 'codigo'),
 
             SelectFilter::make('turno')
                 ->options([
@@ -146,6 +154,12 @@ class TurmaService
     public function schemaFormulario(): array
     {
         return [
+            TextInput::make('codigo')
+                ->label('Código')
+                ->required()
+                ->maxLength(3)
+                ->minLength(3),
+
             Select::make('id_escola')
                 ->label('Escola')
                 ->relationship('escola', 'nome')
@@ -193,5 +207,21 @@ class TurmaService
                 ])
                 ->required(),
         ];
+    }
+
+    public function aplicarCodigo(array $data): array
+    {
+        $letra = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($data['turma'] ?? '')));
+
+        if (blank($letra)) {
+            return $data;
+        }
+
+        $data['turma']  = $letra;      
+        $data['codigo'] = 'TR' . $letra;    
+
+        // $data['codigo'] = Str::substr($data['codigo'], 0, 3);
+
+        return $data;
     }
 }

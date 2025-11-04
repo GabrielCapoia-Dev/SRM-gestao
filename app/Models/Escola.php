@@ -9,6 +9,7 @@ class Escola extends Model
     protected $table = 'escolas';
 
     protected $fillable = [
+        'codigo',
         'nome',
     ];
 

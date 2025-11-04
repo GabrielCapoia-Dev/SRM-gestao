@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_turma')->constrained('turmas')->restrictOnDelete();
             $table->foreignId('id_professor')->nullable()->constrained('professores')->onDelete('cascade');
+            $table->foreignId('id_laudo')->nullable()->constrained('laudos')->onDelete('cascade');
             $table->string('nome');
             $table->string('cgm')->unique();
             $table->enum('sexo', ['Masculino', 'Feminino']);

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('turmas', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->nullable()->unique()->min(3)->max(3);
             $table->foreignId('id_serie')->constrained('series')->restrictOnDelete();
             $table->foreignId('id_escola')->constrained('escolas')->restrictOnDelete();
             $table->string('turma')->max(1);

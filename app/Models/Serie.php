@@ -9,7 +9,11 @@ class Serie extends Model
     //
     protected $table = 'series';
 
-    protected $fillable = ['nome', 'status'];
+    protected $fillable = [
+        'nome', 
+        'codigo',
+        'status'
+    ];
 
     // public function turmas()
     // {

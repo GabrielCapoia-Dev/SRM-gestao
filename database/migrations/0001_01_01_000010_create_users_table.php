@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('email_approved')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('codigo')->nullable()->unique()->min(3)->max(3);
             $table->rememberToken();
             $table->timestamps();
 

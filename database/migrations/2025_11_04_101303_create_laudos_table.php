@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_ambientes', function (Blueprint $table) {
+        Schema::create('laudos', function (Blueprint $table) {
             $table->id();
-            $table->string('nome')->unique()->max(50);
-            $table->boolean('status')->default(false);
+            $table->string('codigo')->nullable()->unique()->min(3)->max(3);
+            $table->string('laudo');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipo_ambientes');
+        Schema::dropIfExists('laudos');
     }
 };

@@ -33,8 +33,14 @@ class SerieService
     private function colunasTabela(): array
     {
         return [
+            TextColumn::make('codigo')
+                ->label('Código')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+                
             TextColumn::make('nome')
-                ->label('Nome de usuário')
+                ->label('Nome da série')
                 ->wrap()
                 ->sortable()
                 ->searchable(),
@@ -93,6 +99,13 @@ class SerieService
     protected function schemaFormulario(): array
     {
         return [
+
+            TextInput::make('codigo')
+                ->label('Código')
+                ->required()
+                ->maxLength(3)
+                ->minLength(3),
+
             TextInput::make('nome')
                 ->label('Nome:')
                 ->required()
