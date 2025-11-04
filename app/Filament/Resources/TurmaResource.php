@@ -19,7 +19,7 @@ class TurmaResource extends Resource
 {
     protected static ?string $model = Turma::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationIcon = 'heroicon-o-squares-plus';
     protected static ?string $navigationLabel = 'Turmas';
     protected static ?string $pluralModelLabel = 'Turmas';
     protected static ?string $modelLabel = 'Turma';

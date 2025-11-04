@@ -154,7 +154,7 @@
         <p class="subtitle">Sala de Recursos Multifuncionais</p>
         <p class="description">
             Sistema de coleta e acompanhamento de dados para educação especial e inclusiva, 
-            voltado ao desenvolvimento de crianças com necessidades especiais.
+            voltado ao acompanhamento de crianças com necessidades especiais.
         </p>
         
         <a href="/admin/login" class="btn-access">

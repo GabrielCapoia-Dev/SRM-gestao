@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Filament\Resources\AlunoResource;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -51,10 +52,10 @@ class TurmaService
                 ->label('Turno')
                 ->searchable(),
 
-            // TextColumn::make('alunos_count')
-            //     ->label('Qtd. Alunos')
-            //     ->counts('alunos')
-            //     ->sortable(),
+            TextColumn::make('alunos_count')
+                ->label('Qtd. Alunos')
+                ->counts('alunos')
+                ->sortable(),
 
             TextColumn::make('created_at')
                 ->label('Criado em')
@@ -74,23 +75,23 @@ class TurmaService
             Action::make('viewAlunos')
                 ->label('Ver Alunos')
                 ->icon('heroicon-o-eye')
-                ->color('info'),
-            // ->url(fn($record) => AlunoResource::getUrl('index', [
-            //     'turma' => $record->id,
-            // ])),
+                ->color('info')
+                ->url(fn($record) => AlunoResource::getUrl('index', [
+                    'turma' => $record->id,
+                ])),
             EditAction::make(),
             DeleteAction::make()
-            // ->before(function ($record, $action) {
-            //     if ($record->alunos()->exists()) {
-            //         Notification::make()
-            //             ->title('Não é possível excluir esta turma.')
-            //             ->body('Existem alunos vinculados a ela.')
-            //             ->danger()
-            //             ->send();
+                ->before(function ($record, $action) {
+                    if ($record->alunos()->exists()) {
+                        Notification::make()
+                            ->title('Não é possível excluir esta turma.')
+                            ->body('Existem alunos vinculados a ela.')
+                            ->danger()
+                            ->send();
 
-            //         $action->cancel();
-            //     }
-            // }),
+                        $action->cancel();
+                    }
+                }),
         ];
     }
 
@@ -110,7 +111,6 @@ class TurmaService
                     'Manhã' => 'Manhã',
                     'Tarde' => 'Tarde',
                     'Noite' => 'Noite',
-                    'Integral' => 'Integral',
                 ]),
         ];
     }
@@ -120,20 +120,20 @@ class TurmaService
     {
         return [
             DeleteBulkAction::make()
-                // ->before(function ($records, $action) {
+                ->before(function ($records, $action) {
 
-                //     foreach ($records as $record) {
-                //         if ($record->alunos()->exists()) {
-                //             Notification::make()
-                //                 ->title('Ação cancelada.')
-                //                 ->body('Não é possivel excluir turmas com alunos vinculados.')
-                //                 ->danger()
-                //                 ->send();
+                    foreach ($records as $record) {
+                        if ($record->alunos()->exists()) {
+                            Notification::make()
+                                ->title('Ação cancelada.')
+                                ->body('Não é possivel excluir turmas com alunos vinculados.')
+                                ->danger()
+                                ->send();
 
-                //             $action->halt();
-                //         }
-                //     }
-                // }),
+                            $action->halt();
+                        }
+                    }
+                }),
         ];
     }
 
