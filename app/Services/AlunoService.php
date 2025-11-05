@@ -99,98 +99,115 @@ class AlunoService
                                 ]),
 
                             Fieldset::make('Informações da Escola')
+                                ->columns(12)
                                 ->schema([
-                                    Select::make('id_escola')
-                                        ->label('Escola')
-                                        ->options(fn() => $this->escolaService->opcoesDeEscolasParaUsuario(Auth::user()))
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->default(fn($record) => $this->escolaInicialParaForm($record, Auth::user()))
-                                        ->afterStateHydrated(function ($state, callable $set, $record) {
-                                            $set('id_escola', $this->escolaInicialParaForm($record, Auth::user()));
-                                        })
-                                        ->dehydrated(false)
-                                        ->disabled(fn() => $this->deveTravarCampoEscola(Auth::user()))
-                                        ->reactive()
-                                        ->afterStateUpdated(fn($state, callable $set) => $set('id_turma', null)),
+                                    Grid::make(12)
+                                        ->schema([
+                                            Select::make('id_escola')
+                                                ->label('Escola')
+                                                ->options(fn() => $this->escolaService->opcoesDeEscolasParaUsuario(Auth::user()))
+                                                ->searchable()
+                                                ->preload()
+                                                ->columnSpan(7)
+                                                ->required()
+                                                ->default(fn($record) => $this->escolaInicialParaForm($record, Auth::user()))
+                                                ->afterStateHydrated(function ($state, callable $set, $record) {
+                                                    $set('id_escola', $this->escolaInicialParaForm($record, Auth::user()));
+                                                })
+                                                ->dehydrated(false)
+                                                ->disabled(fn() => $this->deveTravarCampoEscola(Auth::user()))
+                                                ->reactive()
+                                                ->afterStateUpdated(fn($state, callable $set) => $set('id_turma', null)),
 
-                                    Select::make('id_turma')
-                                        ->label('Turma')
-                                        ->options(function (Get $get, $record) {
-                                            $idEscola = $get('id_escola') ?? $record?->turma?->id_escola;
-                                            return $this->opcoesDeTurmasParaEscola($idEscola);
-                                        })
-                                        ->searchable()
-                                        ->required()
-                                        ->disabled(function (Get $get, $record) {
-                                            $idEscola = $get('id_escola') ?? $record?->turma?->id_escola;
-                                            return $this->desabilitarSelectTurma($idEscola);
-                                        })
-                                        ->reactive()
-                                        ->placeholder('Selecione a escola primeiro'),
+                                            Select::make('id_turma')
+                                                ->label('Turma')
+                                                ->options(function (Get $get, $record) {
+                                                    $idEscola = $get('id_escola') ?? $record?->turma?->id_escola;
+                                                    return $this->opcoesDeTurmasParaEscola($idEscola);
+                                                })
+                                                ->searchable()
+                                                ->required()
+                                                ->disabled(function (Get $get, $record) {
+                                                    $idEscola = $get('id_escola') ?? $record?->turma?->id_escola;
+                                                    return $this->desabilitarSelectTurma($idEscola);
+                                                })
+                                                ->reactive()
+                                                ->columnSpan(5)
+                                                ->placeholder('Selecione a turma'),
+                                        ]),
+                                    Grid::make()
+                                        ->schema([
+                                            Checkbox::make('dificuldade_aprendizagem')
+                                                ->columnSpan(1)
+                                                ->label('Apresenta dificuldade na aprendizagem?'),
+
+                                            Checkbox::make('frequenta_srm')
+                                                ->columnSpan(1)
+                                                ->label('Frequenta Sala de Recursos Multifuncionais?'),
+                                        ]),
                                 ])
-                                ->columnSpan(8),
+                                ->columnSpan(6),
 
 
                             Fieldset::make('Profissional de Apoio')
                                 ->schema([
-                                    Select::make('id_professor')
-                                        ->label('Professor')
-                                        ->relationship('professor', 'nome')
-                                        ->searchable()
-                                        ->columnSpan(4)
-                                        ->preload()
-                                        ->required()
+
+                                    Grid::make()
+                                        ->columns(1)
+                                        ->schema([
+                                            Checkbox::make('profissional_apoio')
+                                                ->columnSpan(1)
+                                                ->label('Tem acompanhamento de Profissional de Apoio?'),
+                                            Select::make('id_professor')
+                                                ->label('Professor')
+                                                ->relationship('professor', 'nome')
+                                                ->searchable()
+                                                ->preload()
+                                                ->required(),
+                                        ]),
+
+
                                 ])
-                                ->columnSpan(4),
+                                ->columnSpan(6),
+
+
+
 
 
                         ])
                 ]),
 
-            Section::make('Informações Complementares')
+            Section::make('Acompanhamento Pedagogico')
                 ->collapsible()
                 ->schema([
                     Grid::make(12)
                         ->schema([
-                            Fieldset::make('Acompanhamento Pedagogico')
+                            Grid::make()
                                 ->schema([
-                                    Fieldset::make()
+                                    Grid::make(12)
                                         ->schema([
                                             Grid::make(7)
+                                                ->columnSpan(12)
                                                 ->schema([
                                                     Checkbox::make('ja_foi_retido')
                                                         ->columnSpan(2)
                                                         ->label('Ja foi retido?'),
+                                                ]),
 
-
+                                            Repeater::make('members')
+                                                ->columnSpan(12)
+                                                ->columns(12)
+                                                ->schema([
                                                     Select::make('vezes_retido')
                                                         ->columnSpan(5)
-                                                        ->label(false)
-                                                        ->placeholder('Quantas vezes?')
+                                                        ->label("Quantas vezes foi retido?")
+                                                        ->placeholder('Número vezes')
                                                         ->options([
                                                             '1 vez' => '1 vez',
                                                             '2 vezes' => '2 vezes',
                                                             '3 vezes' => '3 vezes',
                                                             '4 ou mais' => '4 ou mais',
                                                         ]),
-
-
-
-                                                ]),
-
-                                            Repeater::make('members')
-                                                ->schema([
-                                                    Select::make('roles')
-                                                        ->options([
-                                                            '1 vez' => '1 vez',
-                                                            '2 vezes' => '2 vezes',
-                                                            '3 vezes' => '3 vezes',
-                                                            '4 ou mais' => '4 ou mais',
-                                                        ])
-                                                        ->columnSpan(4)
-                                                        ->required(),
                                                     Select::make('role')
                                                         ->options([
                                                             '1 ano' => '1 ano',
@@ -213,23 +230,6 @@ class AlunoService
                                                         ->columnSpan(7),
                                                 ]),
 
-                                        ])
-                                        ->columnSpan(6),
-
-
-                                    Fieldset::make()
-                                        ->schema([
-                                            Checkbox::make('dificuldade_aprendizagem')
-                                                ->columnSpan(6)
-                                                ->label('Apresenta dificuldade na aprendizagem?'),
-
-                                            Checkbox::make('frequenta_srm')
-                                                ->columnSpan(6)
-                                                ->label('Frequenta Sala de Recursos Multifuncionais?'),
-
-                                            Checkbox::make('profissional_apoio')
-                                                ->columnSpan(6)
-                                                ->label('Tem acompanhamento de Profissional de Apoio?'),
                                         ])
                                         ->columnSpan(6),
 
