@@ -10,7 +10,7 @@ class Aluno extends Model
 
     protected $fillable = [
         'id_professor',
-        'turma_id',
+        'id_turma',
         'cgm',
         'nome',
         'sexo',
@@ -19,11 +19,11 @@ class Aluno extends Model
 
     public function turma()
     {
-        return $this->belongsTo(Turma::class);
+        return $this->belongsTo(Turma::class, 'id_turma');
     }
 
     public function professor()
     {
-        return $this->belongsTo(Professor::class);
+        return $this->belongsTo(Professor::class, 'id_professor');
     }
 }

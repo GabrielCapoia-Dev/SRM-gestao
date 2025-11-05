@@ -2,6 +2,14 @@
 
 namespace App\Services;
 
+
+use App\Models\Escola;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use App\Models\Aluno;
 use App\Models\Turma;
 use App\Models\User;
@@ -15,6 +23,10 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\AlunoResource;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\SelectFilter;
 
 class AlunoService
 {
@@ -138,6 +150,117 @@ class AlunoService
                 ])
                 ->columns(2),
 
+        ];
+    }
+
+    public function configurarTabela(Table $table, ?User $user): Table
+    {
+        return $table
+            ->columns($this->colunasTabela())
+            ->actions($this->acoesTabela($user))
+            ->bulkActions($this->acoesEmMassa($user))
+            ->filters($this->filtrosTabela())
+            ->defaultSort('updated_at', 'desc')
+            ->striped();
+    }
+
+    public function colunasTabela(): array
+    {
+        return [
+            TextColumn::make('turma.escola.nome')
+                ->label('Escola')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('turma.serie.nome')
+                ->label('Série')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('turma.turma')
+                ->label('Turma')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('cgm')
+                ->label('CGM')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('nome')
+                ->label('Nome')
+                ->wrap()
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('professor.nome')
+                ->label('Profissional de Apoio')
+                ->wrap()
+                ->sortable()
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('data_nascimento')
+                ->label('Data de Nascimento')
+                ->wrap()
+                ->sortable()
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('sexo')
+                ->label('Sexo')
+                ->wrap()
+                ->sortable()
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('created_at')
+                ->label('Criado em')
+                ->since()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('updated_at')
+                ->label('Atualizado em')
+                ->since()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ];
+    }
+
+    public function filtrosTabela(): array
+    {
+        return [
+            SelectFilter::make('id_escola')
+                ->label('Escola')
+                ->relationship('turma.escola', 'nome'),
+        ];
+    }
+
+
+    /** Ações da tabela. */
+    private function acoesTabela(): array
+    {
+        return [
+            EditAction::make(),
+            DeleteAction::make()
+        ];
+    }
+
+    /** Ações em massa da tabela. */
+    private function acoesEmMassa(?User $user): array
+    {
+        return [
+            DeleteBulkAction::make(),
+
+            FilamentExportBulkAction::make('exportar_filtrados')
+                ->label('Exportar XLSX')
+                ->defaultFormat('xlsx')
+                ->directDownload(),
         ];
     }
 

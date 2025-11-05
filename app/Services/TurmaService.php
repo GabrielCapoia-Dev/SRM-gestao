@@ -154,12 +154,6 @@ class TurmaService
     public function schemaFormulario(): array
     {
         return [
-            TextInput::make('codigo')
-                ->label('Código')
-                ->required()
-                ->maxLength(3)
-                ->minLength(3),
-
             Select::make('id_escola')
                 ->label('Escola')
                 ->relationship('escola', 'nome')
