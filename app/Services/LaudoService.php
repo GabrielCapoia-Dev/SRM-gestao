@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Escola;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Tables\Actions\DeleteAction;
@@ -13,13 +12,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class EscolaService
+class LaudoService
 {
-    public function __construct(
-        protected UserService $userService,
-    ) {}
 
-    /** Configura a tabela completa (paginações, colunas, filtros, ações, ordenação). */
+    public function __construct(private UserService $userService) {}
+
     public function configurarTabela(Table $table, ?User $user): Table
     {
         return $table
@@ -31,17 +28,12 @@ class EscolaService
             ->striped();
     }
 
+
     private function colunasTabela(): array
     {
         return [
-            TextColumn::make('codigo')
-                ->label('Código')
-                ->wrap()
-                ->sortable()
-                ->searchable(),
-
             TextColumn::make('nome')
-                ->label('Nome de usuário')
+                ->label('Laudo')
                 ->wrap()
                 ->sortable()
                 ->searchable(),
@@ -65,6 +57,7 @@ class EscolaService
         return [
             EditAction::make(),
             DeleteAction::make()
+
         ];
     }
 
@@ -84,40 +77,15 @@ class EscolaService
     protected function schemaFormulario(): array
     {
         return [
-
-            TextInput::make('codigo')
-                ->label('Código')
-                ->required()
-                ->maxLength(3)
-                ->minLength(3),
-                
             TextInput::make('nome')
-                ->label('Nome')
+                ->label('Laudo')
                 ->required()
                 ->minLength(3)
-                ->maxLength(100),
+                ->maxLength(100)
+                ->rule('regex:/^[\p{L}\p{N}]+(?: [\p{L}\p{N}]+)*$/u')
+                ->validationMessages([
+                    'regex' => 'Use apenas letras, sem caracteres especiais.',
+                ]),
         ];
-    }
-
-    /** Opções de escolas conforme perfil: Admin vê todas; secretário só a sua. */
-    public function opcoesDeEscolasParaUsuario(?User $user): array
-    {
-        if (app(UserService::class)->ehAdmin($user) || empty($user?->id_escola)) {
-            return $this->opcoesDeEscolas();
-        }
-
-        return Escola::query()
-            ->whereKey($user->id_escola)
-            ->pluck('nome', 'id')
-            ->toArray();
-    }
-
-    /** Opções de escolas ordenadas. */
-    public function opcoesDeEscolas(): array
-    {
-        return Escola::query()
-            ->orderBy('nome')
-            ->pluck('nome', 'id')
-            ->toArray();
     }
 }
