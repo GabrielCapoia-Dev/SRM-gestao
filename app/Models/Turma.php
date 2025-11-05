@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Turma extends Model
+{
+    
+    protected $table = 'turmas';
+
+    protected $fillable = [
+        'id_serie',
+        'id_escola',
+        'codigo',
+        'turma',
+        'turno',
+    ];
+
+    public function serie()
+    {
+        return $this->belongsTo(Serie::class, 'id_serie');
+    }
+
+    public function escola()
+    {
+        return $this->belongsTo(Escola::class, 'id_escola');
+    }
+
+    public function alunos()
+    {
+        return $this->hasMany(Aluno::class, 'id_turma');
+    }
+}

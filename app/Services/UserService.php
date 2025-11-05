@@ -5,7 +5,10 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Escola;
 use App\Models\IgnoredUser;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -144,7 +147,14 @@ class UserService
     protected function schemaFormulario(): array
     {
         return [
-            Forms\Components\TextInput::make('name')
+            
+            TextInput::make('codigo')
+                ->label('Código')
+                ->required()
+                ->maxLength(3)
+                ->minLength(3),
+
+            TextInput::make('name')
                 ->label('Nome:')
                 ->required()
                 ->minLength(3)
@@ -154,13 +164,13 @@ class UserService
                     'regex' => 'Use apenas letras, sem caracteres especiais.',
                 ]),
 
-            Forms\Components\TextInput::make('email')
+            TextInput::make('email')
                 ->label('E-mail')
                 ->unique(ignoreRecord: true)
                 ->email()
                 ->required(),
 
-            Forms\Components\TextInput::make('password')
+            TextInput::make('password')
                 ->label('Senha')
                 ->password()
                 ->revealable()
@@ -183,7 +193,7 @@ class UserService
                 ]),
 
 
-            Forms\Components\Select::make('role')
+            Select::make('role')
                 ->label('Nivel de acesso')
                 ->relationship('roles', 'name', function (Builder $query) {
                     return $this->opcoesDeRoles($query, Auth::user());
@@ -195,7 +205,7 @@ class UserService
                     $this->desabilitarCampoRole(Auth::user(), $record, $context)
                 ),
 
-            Forms\Components\Toggle::make('email_approved')
+            Toggle::make('email_approved')
                 ->label('Verificação de acesso')
                 ->inline(false)
                 ->onColor('success')
@@ -208,11 +218,11 @@ class UserService
                     $this->podeVerToggleAprovacaoEmail(Auth::user(), $record, $context)
                 ),
 
-            Forms\Components\Section::make('Vínculo com Escola')
+            Section::make('Vínculo com Escola')
                 ->icon('heroicon-o-identification')
                 ->description('Aqui mostra se o usuário esta vinculado a uma escola.')
                 ->schema([
-                    Forms\Components\Select::make('id_escola')
+                    Select::make('id_escola')
                         ->label('Escola')
                         ->options(fn() => $this->opcoesDeEscolasParaCampo(Auth::user()))
                         ->searchable()

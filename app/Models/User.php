@@ -40,6 +40,7 @@ class User extends Authenticatable implements FilamentUser
         'google_token',
         'google_refresh_token',
         'google_token_expires_in',
+        'codigo',
     ];
 
     protected $hidden = [

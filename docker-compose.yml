@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     image: laravel-app-srm-gestao
     container_name: laravel-app-srm-gestao
+    restart: unless-stopped
     working_dir: /var/www
     ports:
       - "8000:8000"
@@ -22,6 +23,7 @@ services:
   db:
     image: mysql:8.0
     container_name: laravel-db-srm-gestao
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: srm-gestao
@@ -40,10 +42,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: laravel-phpmyadmin-srm-gestao
-    environment:
-      PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: root
+    restart: unless-stopped
     ports:
       - "8081:80"
     depends_on:

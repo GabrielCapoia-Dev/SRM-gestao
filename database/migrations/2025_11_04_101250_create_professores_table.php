@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ambientes', function (Blueprint $table) {
+        Schema::create('professores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tipo_ambiente_id')->constrained('tipo_ambientes')->restrictOnDelete('cascade');
-            $table->string('nome')->unique()->max(50);
-            $table->boolean('status')->default(true);
-            $table->integer('capacidade');
+            $table->string('matricula')->nullable()->unique();
+            $table->string('nome');
+            $table->string('email')->nullable()->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ambientes');
+        Schema::dropIfExists('professores');
     }
 };

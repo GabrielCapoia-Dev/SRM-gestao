@@ -19,14 +19,22 @@ use Rmsramos\Activitylog\ActivitylogPlugin;
 use Filament\Http\Middleware\Authenticate;
 use App\Livewire\LoginPage;
 use App\Services\UserService;
+use Hasnayeen\Themes\ThemesPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
+
+    public static function getAuthUser()
+    {
+        
+        return Auth::user();
+    }
+
     public function panel(Panel $panel): Panel
     {
+        $auth = Auth::user();
         return $panel
-            ->routes(function () {
-            })
+            ->routes(function () {})
             ->default()
             ->id('admin')
             ->path('admin')
@@ -34,16 +42,16 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Green,
                 'gray' => [
-                    50 => '#e9f0f0ff',
-                    100 => '#c7f8e9c7',
+                    50 => '#e5eaf1ff',
+                    100 => '#c7def8c7',
                     200 => '#c0d4d4ff',
                     300 => '#c7caccff',
                     400 => '#a0a0a0ff',
                     500 => '#929292ff',
-                    600 => '#5c5c66ff',
-                    700 => '#513737ff',
-                    800 => '#1f2937',
-                    900 => '#0e1930ff',
+                    600 => '#074f9bff',
+                    700 => '#074f9b29',
+                    800 => '#151D2Fff',
+                    900 => '#081124ff',
                     950 => '#081124ff',
                 ],
             ])
@@ -64,19 +72,25 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
+            ])
+            ->tenantMiddleware([
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
             ->plugins([
 
+                ThemesPlugin::make()
+                    ->canViewThemesPage(fn() => app(UserService::class)->ehAdmin($this->getAuthUser()) ?? false),
 
                 ActivitylogPlugin::make()
                     ->label('Registro de Atividade')
                     ->pluralLabel('Registro de Atividades')
                     ->navigationGroup('Administrativo')
                     ->navigationSort(1)
-                    ->authorize(fn() => app(UserService::class)->ehAdmin(Auth::user())),
+                    ->authorize(fn() => app(UserService::class)->ehAdmin($this->getAuthUser())),
             ]);
     }
 }
