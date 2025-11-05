@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('laudos', function (Blueprint $table) {
             $table->id();
-            $table->string('codigo')->nullable()->unique()->min(3)->max(3);
-            $table->string('laudo');
+            $table->string('nome');
             $table->timestamps();
         });
     }

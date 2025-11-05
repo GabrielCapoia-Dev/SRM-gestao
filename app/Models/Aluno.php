@@ -11,6 +11,7 @@ class Aluno extends Model
     protected $fillable = [
         'id_professor',
         'id_turma',
+        'id_laudo',
         'cgm',
         'nome',
         'sexo',
@@ -25,5 +26,10 @@ class Aluno extends Model
     public function professor()
     {
         return $this->belongsTo(Professor::class, 'id_professor');
+    }
+
+    public function laudo()
+    {
+        return $this->belongsTo(Laudo::class, 'id_laudo');
     }
 }

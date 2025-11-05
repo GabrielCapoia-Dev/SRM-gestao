@@ -32,14 +32,8 @@ class LaudoService
     private function colunasTabela(): array
     {
         return [
-            TextColumn::make('codigo')
-                ->label('Código')
-                ->wrap()
-                ->sortable()
-                ->searchable(),
-                
             TextColumn::make('nome')
-                ->label('Nome de usuário')
+                ->label('Laudo')
                 ->wrap()
                 ->sortable()
                 ->searchable(),
@@ -63,16 +57,7 @@ class LaudoService
         return [
             EditAction::make(),
             DeleteAction::make()
-                ->before(function (User $record, DeleteAction $action) use ($user) {
-                    if (! $this->userService->podeDeletar($user, $record)) {
-                        $action->failure();
-                        $action->halt();
-                    }
-                })
-                ->visible(
-                    fn() =>
-                    $this->userService->ehAdmin(Auth::user())
-                ),
+
         ];
     }
 
@@ -80,12 +65,6 @@ class LaudoService
     {
         return [
             DeleteBulkAction::make()
-                ->before(function ($records, $action) use ($user) {
-                    if (! $this->userService->podeDeletarEmLote($user, $records)) {
-                        $action->halt();
-                    }
-                })
-                ->visible(fn() => $this->userService->ehAdmin(Auth::user())),
         ];
     }
 
@@ -98,7 +77,7 @@ class LaudoService
     protected function schemaFormulario(): array
     {
         return [
-            TextInput::make('laudo')
+            TextInput::make('nome')
                 ->label('Laudo')
                 ->required()
                 ->minLength(3)

@@ -65,16 +65,6 @@ class EscolaService
         return [
             EditAction::make(),
             DeleteAction::make()
-                ->before(function (User $record, DeleteAction $action) use ($user) {
-                    if (! $this->userService->podeDeletar($user, $record)) {
-                        $action->failure();
-                        $action->halt();
-                    }
-                })
-                ->visible(
-                    fn() =>
-                    $this->userService->ehAdmin(Auth::user())
-                ),
         ];
     }
 
@@ -82,12 +72,6 @@ class EscolaService
     {
         return [
             DeleteBulkAction::make()
-                ->before(function ($records, $action) use ($user) {
-                    if (! $this->userService->podeDeletarEmLote($user, $records)) {
-                        $action->halt();
-                    }
-                })
-                ->visible(fn() => $this->userService->ehAdmin(Auth::user())),
         ];
     }
 

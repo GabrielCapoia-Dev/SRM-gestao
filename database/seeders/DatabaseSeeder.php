@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\DominioEmail;
+use App\Models\Laudo;
 use App\Models\Serie;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -160,9 +161,35 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        /**
+         * Criar séries
+         */
+        $laudoList = [
+            'TRANSTORNO DO DESENVOLVIMENTO INTELECTUAL',
+            'TRANSTORNO DO ESPECTRO AUTISTA',
+            'ALTAS HABILIDADES/SUPERDOTAÇÃO',
+            'TRANSTORNO DE DÉFICIT DE ATENÇÃO E HIPERATIVIDADE',
+            'TRANSTORNO OPOSITOR DESAFIADOR',
+            'DEFICIÊNCIA AUDITIVA',
+            'SURDEZ',
+            'SURDOCEGUEIRA',
+            'DEFICIÊNCIA FÍSICA',
+            'DEFICIÊNCIA VISUAL',
+            'BAIXA VISÃO',
+            'TRANSTORNOS MENTAIS/COMPORTAMENTAIS',
+            'ATRASO NO DESENVOLVIMENTO NEUROMOTOR',
+        ];
+
+        foreach ($laudoList as $laudo) {
+
+            Laudo::updateOrCreate(
+                ['nome' => $laudo],
+            );
+        }
+
         $this->call([
             EscolaSeeder::class,
-            TurmaCodigoSeeder::class,
+            TurmaSeeder::class,
         ]);
     }
 

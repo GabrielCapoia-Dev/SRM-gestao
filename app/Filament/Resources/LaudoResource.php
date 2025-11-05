@@ -19,7 +19,11 @@ class LaudoResource extends Resource
 {
     protected static ?string $model = Laudo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-plus';
+    public static ?string $modelLabel = 'Laudo';
+    protected static ?string $navigationGroup = "Gerenciamento Escolar";
+    public static ?string $pluralModelLabel = 'Laudos';
+    public static ?string $slug = 'laudos';
 
     public static function laudoService(): LaudoService
     {

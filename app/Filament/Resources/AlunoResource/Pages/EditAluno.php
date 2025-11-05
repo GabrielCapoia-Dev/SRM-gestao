@@ -10,10 +10,9 @@ class EditAluno extends EditRecord
 {
     protected static string $resource = AlunoResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getRedirectUrl(): string
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        return $this->previousUrl ?? $this->getResource()::getUrl('index');
     }
+
 }

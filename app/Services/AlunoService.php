@@ -13,6 +13,10 @@ use Filament\Tables\Table;
 use App\Models\Aluno;
 use App\Models\Turma;
 use App\Models\User;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
@@ -44,10 +48,12 @@ class AlunoService
     public function schemaFormulario(): array
     {
         return [
-            Grid::make(6)
+            Section::make('Dados do Aluno')
+                ->collapsible()
                 ->schema([
-                    Fieldset::make('Dados do Aluno')
+                    Grid::make(12)
                         ->schema([
+
                             TextInput::make('cgm')
                                 ->label('CGM:')
                                 ->required()
@@ -58,12 +64,14 @@ class AlunoService
                                     'min' => 'O CGM deve ter no mínimo 6 dígitos.',
                                 ])
                                 ->unique(ignoreRecord: true)
-                                ->maxLength(20),
+                                ->maxLength(20)
+                                ->columnSpan(3),
 
                             TextInput::make('nome')
                                 ->label('Nome:')
                                 ->required()
                                 ->minLength(3)
+                                ->columnSpan(3)
                                 ->maxLength(100)
                                 ->rule('regex:/^[\p{L}\p{N}]+(?: [\p{L}\p{N}]+)*$/u')
                                 ->validationMessages([
@@ -72,6 +80,7 @@ class AlunoService
 
                             Select::make('sexo')
                                 ->label('Sexo:')
+                                ->columnSpan(3)
                                 ->placeholder('Selecione')
                                 ->required()
                                 ->options([
@@ -80,6 +89,7 @@ class AlunoService
                                 ]),
 
                             DatePicker::make('data_nascimento')
+                                ->columnSpan(3)
                                 ->label('Data de Nascimento:')
                                 ->required()
                                 ->maxDate(Carbon::today()->subYears(1))
@@ -119,36 +129,133 @@ class AlunoService
                                         })
                                         ->reactive()
                                         ->placeholder('Selecione a escola primeiro'),
-                                ]),
+                                ])
+                                ->columnSpan(8),
 
 
-                            Section::make('Profissional de Apoio')
+                            Fieldset::make('Profissional de Apoio')
                                 ->schema([
                                     Select::make('id_professor')
-                                        ->label('Profissional de Apoio')
+                                        ->label('Professor')
                                         ->relationship('professor', 'nome')
                                         ->searchable()
+                                        ->columnSpan(4)
                                         ->preload()
                                         ->required()
-                                ]),
-                        ])
-                        ->columnSpan(1),
-
-                    Fieldset::make('Laudo')
-                        ->schema([
-                            TextInput::make('laudo')
-                                ->label('Laudo:')
-                                ->required()
-                                ->minLength(3)
-                                ->maxLength(100)
-                                ->rule('regex:/^[\p{L}\p{N}]+(?: [\p{L}\p{N}]+)*$/u')
-                                ->validationMessages([
-                                    'regex' => 'Use apenas letras, sem caracteres especiais.',
                                 ])
+                                ->columnSpan(4),
+
+
                         ])
-                        ->columnSpan(1),
+                ]),
+
+            Section::make('Informações Complementares')
+                ->collapsible()
+                ->schema([
+                    Grid::make(12)
+                        ->schema([
+                            Fieldset::make('Acompanhamento Pedagogico')
+                                ->schema([
+                                    Fieldset::make()
+                                        ->schema([
+                                            Grid::make(7)
+                                                ->schema([
+                                                    Checkbox::make('ja_foi_retido')
+                                                        ->columnSpan(2)
+                                                        ->label('Ja foi retido?'),
+
+
+                                                    Select::make('vezes_retido')
+                                                        ->columnSpan(5)
+                                                        ->label(false)
+                                                        ->placeholder('Quantas vezes?')
+                                                        ->options([
+                                                            '1 vez' => '1 vez',
+                                                            '2 vezes' => '2 vezes',
+                                                            '3 vezes' => '3 vezes',
+                                                            '4 ou mais' => '4 ou mais',
+                                                        ]),
+
+
+
+                                                ]),
+
+                                            Repeater::make('members')
+                                                ->schema([
+                                                    Select::make('roles')
+                                                        ->options([
+                                                            '1 vez' => '1 vez',
+                                                            '2 vezes' => '2 vezes',
+                                                            '3 vezes' => '3 vezes',
+                                                            '4 ou mais' => '4 ou mais',
+                                                        ])
+                                                        ->columnSpan(4)
+                                                        ->required(),
+                                                    Select::make('role')
+                                                        ->options([
+                                                            '1 ano' => '1 ano',
+                                                            '2 ano' => '2 ano',
+                                                            '3 ano' => '3 ano',
+                                                        ])
+                                                        ->columnSpan(4)
+                                                        ->required(),
+                                                    CheckboxList::make('motivo_retido')
+                                                        ->label('As retenções ocorreram por:')
+                                                        ->options([
+                                                            'Faltas' => 'Faltas',
+                                                            'Aprendizagem' => 'Aprendizagem',
+                                                        ])
+                                                        ->descriptions([
+                                                            'Faltas' => 'Excesso de faltas',
+                                                            'Aprendizagem' => 'Dificuldades na aprendizagem',
+                                                        ])
+                                                        ->columns(2)
+                                                        ->columnSpan(7),
+                                                ]),
+
+                                        ])
+                                        ->columnSpan(6),
+
+
+                                    Fieldset::make()
+                                        ->schema([
+                                            Checkbox::make('dificuldade_aprendizagem')
+                                                ->columnSpan(6)
+                                                ->label('Apresenta dificuldade na aprendizagem?'),
+
+                                            Checkbox::make('frequenta_srm')
+                                                ->columnSpan(6)
+                                                ->label('Frequenta Sala de Recursos Multifuncionais?'),
+
+                                            Checkbox::make('profissional_apoio')
+                                                ->columnSpan(6)
+                                                ->label('Tem acompanhamento de Profissional de Apoio?'),
+                                        ])
+                                        ->columnSpan(6),
+
+
+                                ]),
+
+                        ]),
+
+                    Fieldset::make('Informações Medicas')
+                        ->schema([
+                            Select::make('laudo')
+                                ->label('Laudo')
+                                ->required()
+                                ->relationship('laudo', 'nome'),
+
+                            FileUpload::make('anexo')
+                                ->label('Anexo')
+                                ->helperText('Anexe um pdf com todos os laudos e anexos.')
+                                ->openable()
+                                ->previewable(false)
+                                ->acceptedFileTypes(['application/pdf'])
+
+
+                        ]),
                 ])
-                ->columns(2),
+
 
         ];
     }
@@ -241,8 +348,6 @@ class AlunoService
         ];
     }
 
-
-    /** Ações da tabela. */
     private function acoesTabela(): array
     {
         return [
@@ -251,7 +356,6 @@ class AlunoService
         ];
     }
 
-    /** Ações em massa da tabela. */
     private function acoesEmMassa(?User $user): array
     {
         return [
@@ -269,7 +373,6 @@ class AlunoService
         return blank($idEscola);
     }
 
-    /** Opções de turmas filtradas pela escola escolhida. */
     public function opcoesDeTurmasParaEscola(?int $idEscola): array
     {
         if (! $idEscola) {

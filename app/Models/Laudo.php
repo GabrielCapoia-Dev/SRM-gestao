@@ -9,12 +9,11 @@ class Laudo extends Model
     protected $table = 'laudos';
 
     protected $fillable = [
-        'codigo',
-        'laudo',
+        'nome',
     ];
 
-    public function aluno()
+    public function alunos()
     {
-        return $this->belongsTo(Aluno::class);
+        return $this->hasMany(Aluno::class, 'id_laudo');
     }
 }

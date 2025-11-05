@@ -23,6 +23,12 @@ use Illuminate\Support\ServiceProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Events\ServingFilament;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Event;
+use App\Services\UserService;
+use Hasnayeen\Themes\Themes;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,5 +56,18 @@ class AppServiceProvider extends ServiceProvider
             Css::make('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
             Js::make('leaflet-js',  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'),
         ]);
+
+        Event::listen(ServingFilament::class, function () {
+            $user = Filament::auth()?->user() ?? Auth::user();
+
+            $isAdmin = app(UserService::class)->ehAdmin($user);
+
+            app(Themes::class)->register(
+                $isAdmin
+                    ? [\Hasnayeen\Themes\Themes\Sunset::class]
+                    : [\App\Filament\Themes\TemaSME::class, \Hasnayeen\Themes\Themes\Nord::class],
+                true // override
+            );
+        });
     }
 }
