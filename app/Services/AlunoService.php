@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use App\Models\Aluno;
 use App\Models\Turma;
 use App\Models\User;
+use App\Models\Serie;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
@@ -31,6 +33,7 @@ use App\Filament\Resources\AlunoResource;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Set;
 
 class AlunoService
 {
@@ -135,15 +138,19 @@ class AlunoService
                                                 ->columnSpan(5)
                                                 ->placeholder('Selecione a turma'),
                                         ]),
-                                    Grid::make()
+                                    Grid::make(3)
                                         ->schema([
                                             Checkbox::make('dificuldade_aprendizagem')
-                                                ->columnSpan(1)
+                                                ->columnSpan(3)
                                                 ->label('Apresenta dificuldade na aprendizagem?'),
 
                                             Checkbox::make('frequenta_srm')
-                                                ->columnSpan(1)
+                                                ->columnSpan(3)
                                                 ->label('Frequenta Sala de Recursos Multifuncionais?'),
+
+                                            Checkbox::make('encaminhado_para_SME')
+                                                ->columnSpan(3)
+                                                ->label('Encaminhado(a) para a Equipe Multiprofissional da SME?'),
                                         ]),
                                 ])
                                 ->columnSpan(6),
@@ -151,73 +158,91 @@ class AlunoService
 
                             Fieldset::make('Profissional de Apoio')
                                 ->schema([
+                                    Grid::make()->columns(1)->schema([
+                                        Checkbox::make('profissional_apoio')
+                                            ->label('Tem acompanhamento de Profissional de Apoio?')
+                                            ->reactive()
+                                            ->afterStateUpdated(function (bool $state, Set $set) {
+                                                if (! $state) {
+                                                    $set('id_professor', null);
+                                                }
+                                            }),
 
-                                    Grid::make()
-                                        ->columns(1)
-                                        ->schema([
-                                            Checkbox::make('profissional_apoio')
-                                                ->columnSpan(1)
-                                                ->label('Tem acompanhamento de Profissional de Apoio?'),
-                                            Select::make('id_professor')
-                                                ->label('Professor')
-                                                ->relationship('professor', 'nome')
-                                                ->searchable()
-                                                ->preload()
-                                                ->required(),
-                                        ]),
-
-
+                                        Select::make('id_professor')
+                                            ->label('Profissional de Apoio')
+                                            ->relationship('professor', 'nome')
+                                            ->searchable()
+                                            ->preload()
+                                            ->hidden(fn(Get $get) => ! $get('profissional_apoio'))
+                                            ->dehydrated(fn(Get $get) => (bool) $get('profissional_apoio'))
+                                            ->required(fn(Get $get) => (bool) $get('profissional_apoio')),
+                                    ]),
                                 ])
                                 ->columnSpan(6),
-
-
-
-
-
                         ])
                 ]),
 
-            Section::make('Acompanhamento Pedagogico')
+            Section::make('Retenções')
                 ->collapsible()
                 ->schema([
                     Grid::make(12)
                         ->schema([
                             Grid::make()
                                 ->schema([
-                                    Grid::make(12)
+                                    Fieldset::make()
+                                        ->columns(12)
                                         ->schema([
-                                            Grid::make(7)
+                                            Grid::make(12)
                                                 ->columnSpan(12)
                                                 ->schema([
-                                                    Checkbox::make('ja_foi_retido')
+                                                    Radio::make('ja_foi_retido')
+                                                        ->label('Já foi retido?')
+                                                        ->columns(2)
                                                         ->columnSpan(2)
-                                                        ->label('Ja foi retido?'),
+                                                        ->options([
+                                                            'Sim' => 'Sim',
+                                                            'Nao' => 'Não',
+                                                        ])
+                                                        ->required()
+                                                        ->reactive()
+                                                        ->afterStateUpdated(function ($state, Set $set) {
+                                                            if ($state !== 'Sim') {
+                                                                $set('retidos', null);
+                                                            }
+                                                        }),
+
                                                 ]),
 
-                                            Repeater::make('members')
-                                                ->columnSpan(12)
+                                            Repeater::make('retidos')
+                                                ->label('Retenções')
+                                                ->relationship('retencoes')
+                                                ->defaultItems(1)
+                                                ->collapsible()
+                                                ->reorderable(false)
                                                 ->columns(12)
+                                                ->columnSpan(12)
+                                                ->hidden(fn(Get $get) => $get('ja_foi_retido') !== 'Sim')
+                                                ->dehydrated(fn(Get $get) => $get('ja_foi_retido') === 'Sim')
+                                                ->required(fn(Get $get) => $get('ja_foi_retido') === 'Sim')
+
                                                 ->schema([
                                                     Select::make('vezes_retido')
-                                                        ->columnSpan(5)
-                                                        ->label("Quantas vezes foi retido?")
-                                                        ->placeholder('Número vezes')
+                                                        ->columnSpan(2)
+                                                        ->required()
+                                                        ->label('Quantas vezes foi retido?')
                                                         ->options([
                                                             '1 vez' => '1 vez',
                                                             '2 vezes' => '2 vezes',
                                                             '3 vezes' => '3 vezes',
                                                             '4 ou mais' => '4 ou mais',
                                                         ]),
-                                                    Select::make('role')
-                                                        ->options([
-                                                            '1 ano' => '1 ano',
-                                                            '2 ano' => '2 ano',
-                                                            '3 ano' => '3 ano',
-                                                        ])
-                                                        ->columnSpan(4)
+                                                    Select::make('ano_retido')
+                                                        ->options(fn() => Serie::all()->pluck('nome', 'id'))
+                                                        ->columnSpan(2)
                                                         ->required(),
                                                     CheckboxList::make('motivo_retido')
                                                         ->label('As retenções ocorreram por:')
+                                                        ->required()
                                                         ->options([
                                                             'Faltas' => 'Faltas',
                                                             'Aprendizagem' => 'Aprendizagem',
@@ -229,7 +254,6 @@ class AlunoService
                                                         ->columns(2)
                                                         ->columnSpan(7),
                                                 ]),
-
                                         ])
                                         ->columnSpan(6),
 
@@ -238,23 +262,137 @@ class AlunoService
 
                         ]),
 
-                    Fieldset::make('Informações Medicas')
+                ]),
+            Section::make('Informações CAEI')
+                ->collapsible()
+                ->schema([
+                    Grid::make(12)
                         ->schema([
-                            Select::make('laudo')
-                                ->label('Laudo')
-                                ->required()
-                                ->relationship('laudo', 'nome'),
+                            Fieldset::make()
+                                ->columns(12)
+                                ->schema([
+                                    Radio::make('encaminhado_para_CAEI')
+                                        ->label('Encaminhado(a) para a Equipe Multiprofissional da CAEI?')
+                                        ->columns(2)
+                                        ->columnSpan(5)
+                                        ->options([
+                                            'Sim' => 'Sim',
+                                            'Nao' => 'Não',
+                                        ])
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Set $set) {
+                                            if (! in_array('Sim', (array) $state, true)) {
+                                                $set('encaminhado_para_especialista', null);
+                                                $set('fonoaudiologo', null);
+                                                $set('psicologo', null);
+                                                $set('psicopedagogo', null);
+                                                $set('avanco_caei', null);
+                                            }
+                                        })
+                                        ->required(),
 
-                            FileUpload::make('anexo')
-                                ->label('Anexo')
-                                ->helperText('Anexe um pdf com todos os laudos e anexos.')
-                                ->openable()
-                                ->previewable(false)
-                                ->acceptedFileTypes(['application/pdf'])
+                                    Fieldset::make()
+                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
+                                        ->columns(12)
+                                        ->schema([
+                                            Radio::make('encaminhado_para_especialista')
+                                                ->label('Encaminhado(a) para um especialista?')
+                                                ->columns(2)
+                                                ->columnSpan(7)
+                                                ->options([
+                                                    'Sim' => 'Sim',
+                                                    'Nao' => 'Não',
+                                                ])
+                                                ->reactive()
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
+                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
+                                                ->afterStateUpdated(function ($state, Set $set) {
+                                                    if (! in_array('Sim', (array) $state, true)) {
+                                                        $set('fonoaudiologo', null);
+                                                        $set('psicologo', null);
+                                                        $set('psicopedagogo', null);
+                                                    }
+                                                }),
 
+                                            Grid::make()
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                ->columnSpan(6)
+                                                ->schema([
+                                                    Radio::make('fonoaudiologo')
+                                                        ->label('Fonoaudiólogo')
+                                                        ->columnSpan(6)
+                                                        ->columns(3)
+                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+
+                                                    Radio::make('psicologo')
+                                                        ->label('Psicólogo')
+                                                        ->columnSpan(6)
+                                                        ->columns(3)
+                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+
+                                                    Radio::make('psicopedagogo')
+                                                        ->label('Psicopedagogo')
+                                                        ->columnSpan(6)
+                                                        ->columns(3)
+                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+                                                ]),
+                                        ]),
+                                    Fieldset::make()
+                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                        ->columns(12)
+                                        ->schema([
+
+
+                                            Radio::make('avanco_caei')
+                                                ->label('Após o atendimento no CAEI, o(a) estudante apresentou avanços na aprendizagem?')
+                                                ->columns(3)
+                                                ->columnSpan(7)
+                                                ->options([
+                                                    'Sim' => 'Sim',
+                                                    'Nao' => 'Não',
+                                                    'Nao está em atendimento' => 'Não está em atendimento',
+                                                ])
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                        ]),
+                                ]),
 
                         ]),
-                ])
+                ]),
+            Section::make('Informações Medicas')
+                ->collapsible()
+                ->schema([
+                    Grid::make(12)
+                        ->schema([
+                            Fieldset::make()
+                                ->columns(12)
+                                ->schema([
+                                    Select::make('id_laudo')
+                                        ->label('Laudo')
+                                        ->columnSpan(4)
+                                        ->relationship('laudo', 'nome'),
+
+                                    FileUpload::make('anexo')
+                                        ->label('Anexo')
+                                        ->helperText('Anexe um pdf com todos os laudos e anexos.')
+                                        ->disk('public')
+                                        ->directory('laudos')
+                                        ->openable()
+                                        ->previewable(false)
+                                        ->acceptedFileTypes(['application/pdf'])
+                                        ->columnSpan(8)
+                                ])
+                        ])
+
+
+                ]),
 
 
         ];
