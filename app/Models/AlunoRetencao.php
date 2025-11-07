@@ -9,23 +9,25 @@ class AlunoRetencao extends Model
     protected $table = 'aluno_retencoes';
 
     protected $fillable = [
-        'aluno_id',
+        'id_aluno',
         'vezes_retido',
-        'serie_id',
-        'ano_letivo',
+        'id_serie',
+        'ano_retido',
+        'motivo_retido',
     ];
 
     protected $casts = [
-        'motivos' => 'array',
+        'motivo_retido' => 'array',
+        'ano_retido' => 'array',
     ];
 
     public function aluno()
     {
-        return $this->belongsTo(Aluno::class);
+        return $this->belongsTo(Aluno::class, 'id_aluno');
     }
 
     public function serie()
     {
-        return $this->belongsTo(Serie::class);
+        return $this->belongsTo(Serie::class, 'id_serie');
     }
 }

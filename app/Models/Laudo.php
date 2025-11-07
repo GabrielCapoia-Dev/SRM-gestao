@@ -14,6 +14,7 @@ class Laudo extends Model
 
     public function alunos()
     {
-        return $this->hasMany(Aluno::class, 'id_laudo');
+        return $this->belongsToMany(Aluno::class, 'aluno_laudo', 'laudo_id', 'aluno_id')
+            ->withTimestamps();
     }
 }

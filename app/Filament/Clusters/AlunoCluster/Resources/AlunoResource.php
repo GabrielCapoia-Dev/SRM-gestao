@@ -1,29 +1,35 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Clusters\AlunoCluster\Resources;
 
-use App\Filament\Resources\AlunoResource\Pages;
-use App\Filament\Resources\AlunoResource\RelationManagers;
+use App\Filament\Clusters\AlunoCluster;
+use App\Filament\Clusters\AlunoCluster\Resources\AlunoResource\Pages;
+use App\Filament\Clusters\AlunoCluster\Resources\AlunoResource\RelationManagers;
 use App\Models\Aluno;
-use App\Services\AlunoService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Services\AlunoService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Pages\SubNavigationPosition;
+
 
 class AlunoResource extends Resource
 {
     protected static ?string $model = Aluno::class;
 
+
+    protected static ?string $cluster = AlunoCluster::class;
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     protected static ?string $navigationLabel = 'Alunos';
     protected static ?string $pluralModelLabel = 'Alunos';
     protected static ?string $modelLabel = 'Aluno';
-    protected static ?string $navigationGroup = 'Gerenciamento Escolar';
 
     public static function alunoService(): AlunoService
     {
@@ -46,6 +52,13 @@ class AlunoResource extends Resource
             //
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['turma.escola', 'turma.serie', 'professor', 'retencoes.serie']);
+    }
+
 
     public static function getPages(): array
     {

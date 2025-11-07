@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('aluno_retencoes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('aluno_id')->constrained('alunos')->cascadeOnDelete();
+            $table->foreignId('id_aluno')->constrained('alunos')->cascadeOnDelete();
 
             $table->enum('vezes_retido', [
                 '1 vez' => '1 vez',
@@ -22,8 +22,10 @@ return new class extends Migration
                 '4 ou mais' => '4 ou mais',
             ]);
 
-            $table->foreignId('serie_id')->nullable()->constrained('series')->nullOnDelete();
-            $table->string('ano_letivo', 9)->nullable();
+            $table->foreignId('id_serie')->nullable()->constrained('series')->nullOnDelete();
+
+            $table->json('motivo_retido')->nullable();
+            $table->json('ano_retido')->nullable();
 
             $table->timestamps();
         });

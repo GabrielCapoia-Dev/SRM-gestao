@@ -3,12 +3,12 @@
 namespace App\Services;
 
 
-use App\Models\Escola;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use App\Models\Aluno;
 use App\Models\Turma;
@@ -29,9 +29,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Resources\AlunoResource;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Set;
 
@@ -224,10 +222,9 @@ class AlunoService
                                                 ->hidden(fn(Get $get) => $get('ja_foi_retido') !== 'Sim')
                                                 ->dehydrated(fn(Get $get) => $get('ja_foi_retido') === 'Sim')
                                                 ->required(fn(Get $get) => $get('ja_foi_retido') === 'Sim')
-
                                                 ->schema([
                                                     Select::make('vezes_retido')
-                                                        ->columnSpan(2)
+                                                        ->columnSpan(3)
                                                         ->required()
                                                         ->label('Quantas vezes foi retido?')
                                                         ->options([
@@ -236,10 +233,30 @@ class AlunoService
                                                             '3 vezes' => '3 vezes',
                                                             '4 ou mais' => '4 ou mais',
                                                         ]),
-                                                    Select::make('ano_retido')
+
+                                                    Select::make('id_serie') // ajuste aqui pro nome real da coluna FK
+                                                        ->label('Série em que foi retido')
                                                         ->options(fn() => Serie::all()->pluck('nome', 'id'))
-                                                        ->columnSpan(2)
+                                                        ->columnSpan(3)
                                                         ->required(),
+
+                                                    Select::make('ano_retido')
+                                                        ->label('Ano retido')
+                                                        ->required()
+                                                        ->multiple()
+                                                        ->columnSpan(3)
+                                                        ->options(function () {
+                                                            $anoAtual = now()->year;
+                                                            $anos = [];
+
+                                                            for ($i = 0; $i < 10; $i++) {
+                                                                $ano = $anoAtual - $i;
+                                                                $anos[$ano] = $ano;
+                                                            }
+
+                                                            return $anos;
+                                                        }),
+
                                                     CheckboxList::make('motivo_retido')
                                                         ->label('As retenções ocorreram por:')
                                                         ->required()
@@ -252,8 +269,8 @@ class AlunoService
                                                             'Aprendizagem' => 'Dificuldades na aprendizagem',
                                                         ])
                                                         ->columns(2)
-                                                        ->columnSpan(7),
-                                                ]),
+                                                        ->columnSpan(3),
+                                                ])
                                         ])
                                         ->columnSpan(6),
 
@@ -271,7 +288,7 @@ class AlunoService
                             Fieldset::make()
                                 ->columns(12)
                                 ->schema([
-                                    Radio::make('encaminhado_para_CAEI')
+                                    Radio::make('encaminhado_para_caei')
                                         ->label('Encaminhado(a) para a Equipe Multiprofissional da CAEI?')
                                         ->columns(2)
                                         ->columnSpan(5)
@@ -292,7 +309,7 @@ class AlunoService
                                         ->required(),
 
                                     Fieldset::make()
-                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
+                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                         ->columns(12)
                                         ->schema([
                                             Radio::make('encaminhado_para_especialista')
@@ -304,8 +321,8 @@ class AlunoService
                                                     'Nao' => 'Não',
                                                 ])
                                                 ->reactive()
-                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
-                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_CAEI'), true))
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                                 ->afterStateUpdated(function ($state, Set $set) {
                                                     if (! in_array('Sim', (array) $state, true)) {
                                                         $set('fonoaudiologo', null);
@@ -318,7 +335,7 @@ class AlunoService
                                                 ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
                                                 ->columnSpan(6)
                                                 ->schema([
-                                                    Radio::make('fonoaudiologo')
+                                                    Radio::make('status_fonoaudiologo')
                                                         ->label('Fonoaudiólogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
@@ -326,7 +343,7 @@ class AlunoService
                                                         ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
                                                         ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
 
-                                                    Radio::make('psicologo')
+                                                    Radio::make('status_psicologo')
                                                         ->label('Psicólogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
@@ -334,7 +351,7 @@ class AlunoService
                                                         ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
                                                         ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
 
-                                                    Radio::make('psicopedagogo')
+                                                    Radio::make('status_psicopedagogo')
                                                         ->label('Psicopedagogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
@@ -344,7 +361,7 @@ class AlunoService
                                                 ]),
                                         ]),
                                     Fieldset::make()
-                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                        ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                         ->columns(12)
                                         ->schema([
 
@@ -358,9 +375,9 @@ class AlunoService
                                                     'Nao' => 'Não',
                                                     'Nao está em atendimento' => 'Não está em atendimento',
                                                 ])
-                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
-                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
-                                                ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                         ]),
                                 ]),
 
@@ -374,12 +391,15 @@ class AlunoService
                             Fieldset::make()
                                 ->columns(12)
                                 ->schema([
-                                    Select::make('id_laudo')
-                                        ->label('Laudo')
-                                        ->columnSpan(4)
-                                        ->relationship('laudo', 'nome'),
+                                    Select::make('laudos')
+                                        ->label('Laudos')
+                                        ->multiple()
+                                        ->relationship('laudos', 'nome')
+                                        ->preload()
+                                        ->searchable()
+                                        ->columnSpan(4),
 
-                                    FileUpload::make('anexo')
+                                    FileUpload::make('anexo_laudo_path')
                                         ->label('Anexo')
                                         ->helperText('Anexe um pdf com todos os laudos e anexos.')
                                         ->disk('public')
@@ -387,11 +407,9 @@ class AlunoService
                                         ->openable()
                                         ->previewable(false)
                                         ->acceptedFileTypes(['application/pdf'])
-                                        ->columnSpan(8)
-                                ])
-                        ])
-
-
+                                        ->columnSpan(8),
+                                ]),
+                        ]),
                 ]),
 
 
@@ -449,11 +467,60 @@ class AlunoService
                 ->searchable()
                 ->toggleable(isToggledHiddenByDefault: true),
 
+            ToggleColumn::make('dificuldade_aprendizagem')
+                ->label('Dificuldade de Aprendizagem')
+                ->sortable()
+                ->disabled()
+                ->visible()
+                ->inline(false)
+                ->onColor('success')
+                ->offColor('danger')
+                ->onIcon('heroicon-s-check')
+                ->offIcon('heroicon-s-x-mark')
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            ToggleColumn::make('frequenta_srm')
+                ->label('Frequenta SRM')
+                ->sortable()
+                ->disabled()
+                ->visible()
+                ->inline(false)
+                ->onColor('success')
+                ->offColor('danger')
+                ->onIcon('heroicon-s-check')
+                ->offIcon('heroicon-s-x-mark')
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            ToggleColumn::make('encaminhado_para_sme')
+                ->label('Encaminhado para SME')
+                ->sortable()
+                ->disabled()
+                ->visible()
+                ->inline(false)
+                ->onColor('success')
+                ->offColor('danger')
+                ->onIcon('heroicon-s-check')
+                ->offIcon('heroicon-s-x-mark')
+                ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('data_nascimento')
                 ->label('Data de Nascimento')
                 ->wrap()
+                ->date('d/m/Y')
                 ->sortable()
                 ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('data_nascimento')
+                ->label('Idade')
+                ->formatStateUsing(function ($state) {
+                    if (empty($state)) {
+                        return '-';
+                    }
+                    $idade = Carbon::parse($state)->age;
+
+                    return $idade . ' ' . ($idade == 1 ? 'ano' : 'anos');
+                })
+                ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
 
             TextColumn::make('sexo')
@@ -461,7 +528,29 @@ class AlunoService
                 ->wrap()
                 ->sortable()
                 ->searchable()
+                ->badge()
+                ->color(fn(string $state): string => match ($state) {
+                    'Masculino' => 'primary',
+                    'Feminino' => "danger",
+                })
                 ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('laudos.nome')
+                ->label('Laudos')
+                ->formatStateUsing(
+                    fn($state, $record) =>
+                    $record->laudos->pluck('nome')->implode(', ')
+                )
+                ->wrap()
+                ->toggleable(isToggledHiddenByDefault: true),
+
+            TextColumn::make('anexo_laudo_path')
+                ->label('Anexo')
+                ->formatStateUsing(fn($state) => $state ? 'Baixar laudo' : '-')
+                ->url(fn($state) => $state ? asset('storage/' . $state) : null)
+                ->openUrlInNewTab()
+                ->icon(fn($state) => $state ? 'heroicon-o-arrow-down-tray' : null),
+
 
             TextColumn::make('created_at')
                 ->label('Criado em')
