@@ -8,6 +8,7 @@ use App\Models\Serie;
 use App\Services\TurmaService;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ManageTurmas extends ManageRecords
 {
@@ -22,6 +23,15 @@ class ManageTurmas extends ManageRecords
                 ->label('Nova Série')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->model(Serie::class)
+                ->visible(function () {
+                    /** @var \App\Models\User */
+                    $user = Auth::user();
+
+                    if ($user->hasPermissionTo('Criar Séries')) {
+                        return true;
+                    }
+                    return false;
+                })
                 ->modalHeading('Criar Série')
                 ->form(
                     fn() => SerieResource::service()
@@ -35,10 +45,15 @@ class ManageTurmas extends ManageRecords
             Actions\CreateAction::make()
                 ->label('Nova Turma')
                 ->icon('heroicon-o-users')
-                ->mutateFormDataUsing(
-                    fn(array $data): array =>
-                    app(TurmaService::class)->aplicarCodigo($data)
-                ),
+                ->mutateFormDataUsing(function (array $data): array {
+                    /** @var \App\Services\TurmaService $service */
+                    $service = app(TurmaService::class);
+
+                    $data = $service->aplicarCodigo($data);
+                    $data = $service->forcarVinculoComEscola($data, Auth::user());
+
+                    return $data;
+                }),
         ];
     }
 }

@@ -52,17 +52,25 @@ class DatabaseSeeder extends Seeder
             'Criar Alunos',
             'Editar Alunos',
             'Excluir Alunos',
+            'Listar Professores',
+            'Criar Professores',
+            'Editar Professores',
+            'Excluir Professores',
+            'Listar Laudos',
+            'Criar Laudos',
+            'Editar Laudos',
+            'Excluir Laudos',
         ];
 
-        $permissionsCoordenador = [
+        $permissionsSecretario = [
             'Listar Usuários',
             'Criar Usuários',
             'Editar Usuários',
             'Excluir Usuários',
-            'Listar Séries',
-            'Criar Séries',
-            'Editar Séries',
-            'Excluir Séries',
+            'Listar Professores',
+            'Criar Professores',
+            'Editar Professores',
+            'Excluir Professores',
             'Listar Turmas',
             'Criar Turmas',
             'Editar Turmas',
@@ -82,26 +90,28 @@ class DatabaseSeeder extends Seeder
 
         // Criação da rule Admin
         $adminRole = Role::firstOrCreate(['name' => 'Admin']);
-        $coordenadorRole = Role::firstOrCreate(['name' => 'Coordenador']);
+        $secretarioRole = Role::firstOrCreate(['name' => 'Secretário']);
 
         // Atribui todas as permissões à role Admin
         $adminRole->syncPermissions($permissionsList);
-        $coordenadorRole->syncPermissions($permissionsCoordenador);
+        $secretarioRole->syncPermissions($permissionsSecretario);
 
 
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@admin.com'],
             [
+                'codigo' => 100,
                 'name' => 'Admin',
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'email_approved' => true
             ]
         );
-        $coordenadorUser = User::firstOrCreate(
-            ['email' => 'coordenador@coordenador.com'],
+        $secretarioUser = User::firstOrCreate(
+            ['email' => 'secretario@secretario.com'],
             [
-                'name' => 'Coordenador',
+                'codigo' => 101,
+                'name' => 'Secretário',
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'email_approved' => true
@@ -109,7 +119,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $adminUser->assignRole($adminRole);
-        $coordenadorUser->assignRole($coordenadorRole);
+        $secretarioUser->assignRole($secretarioRole);
 
         /**
          * Criar domínios de email

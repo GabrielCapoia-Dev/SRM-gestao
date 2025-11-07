@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Filament\Resources\AlunoResource;
+use App\Filament\Clusters\AlunoCluster\Resources\AlunoResource;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +16,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class TurmaService
 {
@@ -27,6 +29,9 @@ class TurmaService
     public function configurarTabela(Table $table, ?User $user): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) use ($user) {
+                $this->aplicarFiltroPorEscolaDoUsuario($query, $user);
+            })
             ->paginated([10, 25, 50, 100])
             ->columns($this->colunasTabela())
             ->actions($this->acoesTabela($user))
@@ -35,6 +40,21 @@ class TurmaService
             ->defaultSort('updated_at', 'desc')
             ->striped();
     }
+
+    public function aplicarFiltroPorEscolaDoUsuario(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query;
+        }
+        if ($this->userService->ehAdmin($user)) {
+            return $query;
+        }
+        if (! empty($user->id_escola)) {
+            return $query->where('id_escola', $user->id_escola);
+        }
+        return $query;
+    }
+
 
     public function colunasTabela(): array
     {
@@ -162,7 +182,17 @@ class TurmaService
                 ->searchable()
                 ->default(fn() => Auth::user()?->id_escola)
                 ->dehydrated(true)
-                ->disabled(fn() => $this->userService->ehAdmin(Auth::user()) ? false : true),
+                ->disabled(function () {
+                    $user = Auth::user();
+
+                    if (! $user) {
+                        return false;
+                    }
+                    if (filled($user->id_escola)) {
+                        return true;
+                    }
+                    return false;
+                }),
 
             Select::make('id_serie')
                 ->label('Série')
@@ -211,10 +241,19 @@ class TurmaService
             return $data;
         }
 
-        $data['turma']  = $letra;      
-        $data['codigo'] = 'TR' . $letra;    
+        $data['turma']  = $letra;
+        $data['codigo'] = 'TR' . $letra;
 
         // $data['codigo'] = Str::substr($data['codigo'], 0, 3);
+
+        return $data;
+    }
+
+    public function forcarVinculoComEscola(array $data, ?User $auth): array
+    {
+        if ($auth && filled($auth->id_escola)) {
+            $data['id_escola'] = $auth->id_escola;
+        }
 
         return $data;
     }

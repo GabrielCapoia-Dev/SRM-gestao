@@ -11,6 +11,7 @@ class Professor extends Model
     protected $table = 'professores';
 
     protected $fillable = [
+        'id_escola',
         'matricula',
         'nome',
         'email',
@@ -21,5 +22,8 @@ class Professor extends Model
         return $this->hasMany(Aluno::class);
     }
 
-
+    public function escola()
+    {
+        return $this->belongsTo(Escola::class, 'id_escola');
+    }
 }

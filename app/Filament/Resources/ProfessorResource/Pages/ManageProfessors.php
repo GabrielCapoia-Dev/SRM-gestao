@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\ProfessorResource\Pages;
 
 use App\Filament\Resources\ProfessorResource;
+use App\Services\ProfessorService;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ManageProfessors extends ManageRecords
 {
@@ -13,7 +15,11 @@ class ManageProfessors extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->mutateFormDataUsing(function (array $data): array {
+                    return app(ProfessorService::class)
+                        ->forcarVinculoComEscola($data, Auth::user());
+                }),
         ];
     }
 }

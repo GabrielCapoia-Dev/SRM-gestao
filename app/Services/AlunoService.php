@@ -29,9 +29,11 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Set;
+use App\Models\Professor;
+
 
 class AlunoService
 {
@@ -168,7 +170,12 @@ class AlunoService
 
                                         Select::make('id_professor')
                                             ->label('Profissional de Apoio')
-                                            ->relationship('professor', 'nome')
+                                            ->options(function (Get $get) {
+                                                $user = Auth::user();
+                                                $idEscola = $get('id_escola') ?? $user?->id_escola;
+
+                                                return $this->opcoesDeProfissionaisParaEscola($idEscola);
+                                            })
                                             ->searchable()
                                             ->preload()
                                             ->hidden(fn(Get $get) => ! $get('profissional_apoio'))
@@ -416,9 +423,27 @@ class AlunoService
         ];
     }
 
+    public function opcoesDeProfissionaisParaEscola(?int $idEscola): array
+    {
+        $query = Professor::query();
+
+        if ($idEscola) {
+            $query->where('id_escola', $idEscola);
+        }
+
+        return $query
+            ->orderBy('nome')
+            ->pluck('nome', 'id')
+            ->toArray();
+    }
+
+
     public function configurarTabela(Table $table, ?User $user): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) use ($user) {
+                $this->aplicarFiltroPorEscolaDoUsuario($query, $user);
+            })
             ->columns($this->colunasTabela())
             ->actions($this->acoesTabela($user))
             ->bulkActions($this->acoesEmMassa($user))
@@ -426,6 +451,23 @@ class AlunoService
             ->defaultSort('updated_at', 'desc')
             ->striped();
     }
+
+    public function aplicarFiltroPorEscolaDoUsuario(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query;
+        }
+        if ($this->userService->ehAdmin($user)) {
+            return $query;
+        }
+        if (! empty($user->id_escola)) {
+            return $query->whereHas('turma', function (Builder $turmaQuery) use ($user) {
+                $turmaQuery->where('id_escola', $user->id_escola);
+            });
+        }
+        return $query;
+    }
+
 
     public function colunasTabela(): array
     {
