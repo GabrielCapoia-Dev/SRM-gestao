@@ -11,11 +11,21 @@ class Aluno extends Model
     protected $fillable = [
         'id_professor',
         'id_turma',
-        'id_laudo',
         'cgm',
         'nome',
         'sexo',
         'data_nascimento',
+        'dificuldade_aprendizagem',
+        'frequenta_srm',
+        'encaminhado_para_sme',
+        'encaminhado_para_caei',
+        'encaminhado_para_especialista',
+        'status_fonoaudiologo',
+        'status_psicologo',
+        'ja_foi_retido',
+        'status_psicopedagogo',
+        'avanco_caei',
+        'anexo_laudo_path',
     ];
 
     public function turma()
@@ -28,8 +38,14 @@ class Aluno extends Model
         return $this->belongsTo(Professor::class, 'id_professor');
     }
 
-    public function laudo()
+    public function laudos()
     {
-        return $this->belongsTo(Laudo::class, 'id_laudo');
+        return $this->belongsToMany(Laudo::class, 'aluno_laudo', 'aluno_id', 'laudo_id')
+            ->withTimestamps();
+    }
+
+    public function retencoes()
+    {
+        return $this->hasMany(AlunoRetencao::class, 'id_aluno');
     }
 }

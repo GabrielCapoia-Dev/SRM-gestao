@@ -6,6 +6,8 @@ use App\Models\DominioEmail;
 use App\Models\Escola;
 use App\Models\Permission;
 use App\Models\Aluno;
+use App\Models\Laudo;
+use App\Models\Professor;
 use App\Models\Role;
 use App\Models\Serie;
 use App\Models\Turma;
@@ -18,6 +20,8 @@ use App\Policies\SeriePolicy;
 use App\Policies\TurmaPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\AlunoPolicy;
+use App\Policies\LaudoPolicy;
+use App\Policies\ProfessorPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Filament\Support\Assets\Css;
@@ -46,8 +50,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(DominioEmail::class, DominioEmailPolicy::class);
-        // Gate::policy(Escola::class, EscolaPolicy::class);
-        // Gate::policy(Serie::class, SeriePolicy::class);
+        Gate::policy(Escola::class, EscolaPolicy::class);
+        Gate::policy(Serie::class, SeriePolicy::class);
+        Gate::policy(Turma::class, TurmaPolicy::class);
+        Gate::policy(Aluno::class, AlunoPolicy::class);
+        Gate::policy(Professor::class, ProfessorPolicy::class);
+        Gate::policy(Laudo::class, LaudoPolicy::class);
         Gate::define('admin-only', function ($user) {
             return $user->hasRole('Admin');
         });
@@ -66,7 +74,7 @@ class AppServiceProvider extends ServiceProvider
                 $isAdmin
                     ? [\Hasnayeen\Themes\Themes\Sunset::class]
                     : [\App\Filament\Themes\TemaSME::class, \Hasnayeen\Themes\Themes\Nord::class],
-                true // override
+                true
             );
         });
     }

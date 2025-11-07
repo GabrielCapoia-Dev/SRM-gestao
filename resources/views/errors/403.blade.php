@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>403 — Acesso negado | Transporte Escolar Municipal</title>
+    <title>403 — Acesso negado | Educação Especial Municipal</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/403.css') }}">
@@ -16,9 +16,9 @@
         <div class="container">
             <nav class="nav">
                 <div class="logo">
-                    <div class="logo-icon">🚌</div>
+                    <div class="logo-icon">👶</div>
                     <div class="logo-text">
-                        <div class="logo-title">Transporte Escolar</div>
+                        <div class="logo-title">Educação Especial</div>
                         <div class="logo-subtitle">Prefeitura de Umuarama</div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                     </h1>
                     <p class="lead">
                         Infelizmente, você não possui as permissões necessárias para acessar esta área do sistema. 
-                        Esta é uma zona restrita do sistema de transporte escolar.
+                        Esta é uma zona restrita do sistema de Educação Especial.
                     </p>
 
                     <div class="alert-box">
@@ -98,7 +98,7 @@
 
     <footer class="footer">
         <div class="container">
-            <small>&copy; {{ date('Y') }} Prefeitura Municipal de Umuarama — Sistema de Transporte Escolar</small>
+            <small>&copy; {{ date('Y') }} Prefeitura Municipal de Umuarama — Sistema de Educação Especial</small>
         </div>
     </footer>
 

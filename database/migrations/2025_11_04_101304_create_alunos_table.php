@@ -20,6 +20,24 @@ return new class extends Migration
             $table->string('cgm')->unique();
             $table->enum('sexo', ['Masculino', 'Feminino']);
             $table->date('data_nascimento');
+
+            $table->boolean('dificuldade_aprendizagem')->default(false);
+            $table->boolean('frequenta_srm')->default(false);
+
+            $table->enum('encaminhado_para_sme', ['Sim', 'Nao']);
+            
+            $table->enum('ja_foi_retido' , ['Sim', 'Nao']);
+
+            $table->enum('encaminhado_para_caei', ['Sim', 'Nao']);
+            $table->enum('encaminhado_para_especialista', ['Sim', 'Nao']);
+
+            $table->enum('status_fonoaudiologo', ['Sim', 'Nao', 'Lista de Espera'])->nullable();
+            $table->enum('status_psicologo', ['Sim', 'Nao', 'Lista de Espera'])->nullable();
+            $table->enum('status_psicopedagogo', ['Sim', 'Nao', 'Lista de Espera'])->nullable();
+
+            $table->enum('avanco_caei', ['Sim', 'Nao', 'Nao está em atendimento'])->nullable();
+
+            $table->string('anexo_laudo_path')->nullable();
             $table->timestamps();
         });
     }

@@ -27,6 +27,15 @@ class MyColors
         ];
     }
 
+    public static function masculinoBlue(): string
+    {
+        return "#074f9b";
+    }
+    public static function femininoPink(): string
+    {
+        return "#96079bff";
+    }
+
     public static function violet(): array
     {
         return [
