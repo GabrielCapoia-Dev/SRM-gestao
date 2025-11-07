@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TurmaResource\Pages;
 use App\Filament\Resources\TurmaResource\RelationManagers;
 use App\Models\Turma;
+use App\Models\User;
 use App\Services\TurmaService;
 use Filament\Forms;
 use Filament\Forms\Form;

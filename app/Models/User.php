@@ -101,10 +101,19 @@ class User extends Authenticatable implements FilamentUser
 
     protected static function booted()
     {
+        static::creating(function (User $user) {
+            if (is_null($user->codigo)) {
+                $ultimoCodigo = User::max('codigo'); 
 
-        parent::booted();
+                if (empty($ultimoCodigo) || $ultimoCodigo < 100) {
+                    $user->codigo = 100;
+                } else {
+                    $user->codigo = $ultimoCodigo + 1;
+                }
+            }
+        });
 
-        static::updating(function ($user) {
+        static::updating(function (User $user) {
             if (
                 $user->isDirty('email_approved') &&
                 $user->email_approved &&
@@ -114,6 +123,7 @@ class User extends Authenticatable implements FilamentUser
             }
         });
     }
+
 
     public function hasGoogleOauth(): bool
     {

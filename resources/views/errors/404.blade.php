@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>404 — Página não encontrada | Transporte Escolar Municipal</title>
+    <title>404 — Página não encontrada | Educação Especial Municipal</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/404.css') }}">
@@ -18,7 +18,7 @@
                 <div class="logo">
                     <div class="logo-icon">🚌</div>
                     <div class="logo-text">
-                        <div class="logo-title">Transporte Escolar</div>
+                        <div class="logo-title">Educação Especial</div>
                         <div class="logo-subtitle">Prefeitura de Umuarama</div>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
 
     <footer class="footer">
         <div class="container">
-            <small>&copy; {{ date('Y') }} Prefeitura Municipal de Umuarama — Sistema de Transporte Escolar</small>
+            <small>&copy; {{ date('Y') }} Prefeitura Municipal de Umuarama — Sistema de Educação Especial</small>
         </div>
     </footer>
 

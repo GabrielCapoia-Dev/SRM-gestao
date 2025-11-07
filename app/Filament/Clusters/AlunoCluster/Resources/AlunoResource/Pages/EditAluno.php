@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\AlunoResource\Pages;
+namespace App\Filament\Clusters\AlunoCluster\Resources\AlunoResource\Pages;
 
-use App\Filament\Resources\AlunoResource;
+use App\Filament\Clusters\AlunoCluster\Resources\AlunoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,5 +14,4 @@ class EditAluno extends EditRecord
     {
         return $this->previousUrl ?? $this->getResource()::getUrl('index');
     }
-
 }

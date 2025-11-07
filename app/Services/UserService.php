@@ -147,12 +147,13 @@ class UserService
     protected function schemaFormulario(): array
     {
         return [
-            
+
             TextInput::make('codigo')
                 ->label('Código')
-                ->required()
-                ->maxLength(3)
-                ->minLength(3),
+                ->disabled()
+                ->dehydrated()
+                ->numeric()
+                ->minValue(100),
 
             TextInput::make('name')
                 ->label('Nome:')

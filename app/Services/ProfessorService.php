@@ -11,6 +11,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
 
 class ProfessorService
 {
@@ -28,6 +29,26 @@ class ProfessorService
     public function schemaFormulario(): array
     {
         return [
+            Select::make('id_escola')
+                ->label('Escola')
+                ->relationship('escola', 'nome')
+                ->required()
+                ->preload()
+                ->searchable()
+                ->default(fn() => Auth::user()?->id_escola)
+                ->dehydrated(true)
+                ->disabled(function () {
+                    $user = Auth::user();
+
+                    if (! $user) {
+                        return false;
+                    }
+                    if (filled($user->id_escola)) {
+                        return true;
+                    }
+                    return false;
+                }),
+
             TextInput::make('matricula')
                 ->label('Matricula')
                 ->minLength(3)
@@ -70,6 +91,11 @@ class ProfessorService
     public function colunasTabela(): array
     {
         return [
+            TextColumn::make('escola.nome')
+                ->label('Escola')
+                ->sortable()
+                ->searchable(),
+
             TextColumn::make('matricula')
                 ->label('Matricula')
                 ->sortable()
@@ -83,11 +109,13 @@ class ProfessorService
                 ->sortable()
                 ->searchable(),
             TextColumn::make('created_at')
-                ->dateTime()
+                ->label('Criado')
+                ->since()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('updated_at')
-                ->dateTime()
+                ->label('Atualizado')
+                ->since()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
         ];
@@ -129,5 +157,14 @@ class ProfessorService
         return [
             //
         ];
+    }
+
+    public function forcarVinculoComEscola(array $data, ?User $auth): array
+    {
+        if ($auth && filled($auth->id_escola)) {
+            $data['id_escola'] = $auth->id_escola;
+        }
+
+        return $data;
     }
 }
