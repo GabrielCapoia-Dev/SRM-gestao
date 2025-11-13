@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
 
     public static function getAuthUser()
     {
-        
+
         return Auth::user();
     }
 
