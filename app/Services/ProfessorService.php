@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Tables\Columns\IconColumn;
 
 class ProfessorService
 {
@@ -170,22 +171,79 @@ class ProfessorService
                 ->searchable(),
 
             TextColumn::make('matricula')
-                ->label('Matricula')
+                ->label('Matrícula')
                 ->sortable()
-                ->searchable(),
+                ->searchable()
+                ->toggleable(),
+
             TextColumn::make('nome')
-                ->label('Nome do professor')
+                ->label('Nome')
                 ->sortable()
                 ->searchable(),
+
             TextColumn::make('email')
                 ->label('E-mail')
+                ->icon('heroicon-o-envelope')
+                ->copyable()
+                ->copyMessage('E-mail copiado!')
+                ->copyableState(fn($state) => $state)
+                ->url(fn($record) => $record->email ? "mailto:{$record->email}" : null, shouldOpenInNewTab: false)
+                ->sortable()
+                ->searchable()
+                ->toggleable(),
+
+            TextColumn::make('especializacao')
+                ->label('Especialização')
+                ->badge()
+                ->color(fn(string $state) => match ($state) {
+                    'Magisterio'     => 'gray',
+                    'Licenciatura'   => 'primary',
+                    'Bacharelado'    => 'info',
+                    'Pos Graduacao'  => 'success',
+                    'Mestrado'       => 'warning',
+                    'Doutorado'      => 'danger',
+                    default          => 'secondary',
+                })
+                ->sortable()
+                ->searchable()
+                ->toggleable(),
+
+            TextColumn::make('turno')
+                ->label('Turno')
+                ->badge()
+                ->color(fn(string $state) => match ($state) {
+                    'Manhã' => 'primary',
+                    'Tarde' => 'warning',
+                    'Noite' => 'gray',
+                    default => 'secondary',
+                })
                 ->sortable()
                 ->searchable(),
+
+            IconColumn::make('professor_srm')
+                ->label('Professor SRM')
+                ->boolean()
+                ->trueIcon('heroicon-m-check-circle')
+                ->falseIcon('heroicon-m-x-circle')
+                ->trueColor('success')
+                ->falseColor('gray')
+                ->toggleable(),
+
+            IconColumn::make('profissional_apoio')
+                ->label('Profissional de Apoio')
+                ->boolean()
+                ->trueIcon('heroicon-m-check-circle')
+                ->falseIcon('heroicon-m-x-circle')
+                ->trueColor('success')
+                ->falseColor('gray')
+                ->toggleable(),
+
             TextColumn::make('created_at')
                 ->label('Criado')
                 ->since()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
+
             TextColumn::make('updated_at')
                 ->label('Atualizado')
                 ->since()
@@ -193,6 +251,7 @@ class ProfessorService
                 ->toggleable(isToggledHiddenByDefault: true),
         ];
     }
+
 
     public function acoesTabela(?User $user): array
     {
