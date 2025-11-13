@@ -18,7 +18,8 @@ class Professor extends Model
         'especializacao',
         'turno',
         'professor_srm',
-        'profissional_apoio'
+        'profissional_apoio',
+        'especializacao_educacao_especial'
     ];
 
     public function alunos()

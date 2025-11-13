@@ -70,6 +70,7 @@ class ProfessorSeeder extends Seeder
                         'turno'              => $turno,
                         'professor_srm'      => $professorSrm,
                         'profissional_apoio' => $profissionalApoio,
+                        'especializacao_educacao_especial' => (bool) random_int(0, 1),
                     ]);
                 }
             }

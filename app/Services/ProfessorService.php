@@ -117,7 +117,7 @@ class ProfessorService
                             'Noite' => 'Noite',
                         ]),
                 ]),
-            Grid::make(6)
+            Grid::make(9)
                 ->schema([
                     Checkbox::make('professor_srm')
                         ->columnSpan(3)
@@ -149,6 +149,10 @@ class ProfessorService
                         })
                         ->required(fn(Get $get) => ! (bool) $get('professor_srm'))
                         ->rules(['prohibited_if:professor_srm,1']),
+
+                    Checkbox::make('especializacao_educacao_especial')
+                        ->columnSpan(3)
+                        ->label('Possui especialização em Educação Especial?')
                 ]),
 
 
@@ -189,13 +193,16 @@ class ProfessorService
         return [
             TextColumn::make('escola.nome')
                 ->label('Escola')
+                ->wrap()
                 ->sortable()
                 ->searchable(),
 
             TextColumn::make('matricula')
                 ->label('Matrícula')
-                ->sortable()
-                ->searchable(),
+                ->copyable()
+                ->copyMessage('Matrícula copiada!')
+                ->copyableState(fn($state) => $state)
+                ->tooltip('Clique para copiar'),
 
             TextColumn::make('nome')
                 ->label('Nome')
@@ -212,7 +219,8 @@ class ProfessorService
                 ->sortable()
                 ->wrap()
                 ->searchable()
-                ->toggleable(),
+                ->toggleable()
+                ->tooltip('Clique para copiar'),
 
             TextColumn::make('especializacao')
                 ->label('Especialização')
@@ -257,6 +265,17 @@ class ProfessorService
 
             IconColumn::make('profissional_apoio')
                 ->label('Profissional de Apoio')
+                ->boolean()
+                ->alignCenter()
+                ->trueIcon('heroicon-m-check-circle')
+                ->falseIcon('heroicon-m-x-circle')
+                ->trueColor('success')
+                ->sortable()
+                ->falseColor('danger')
+                ->toggleable(),
+
+            IconColumn::make('especializacao_educacao_especial')
+                ->label('Educ. Especial?')
                 ->boolean()
                 ->alignCenter()
                 ->trueIcon('heroicon-m-check-circle')

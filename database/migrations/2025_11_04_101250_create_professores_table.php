@@ -28,6 +28,7 @@ return new class extends Migration
             $table->enum('turno', ['Manhã', 'Tarde','Noite'])->nullable();
             $table->boolean('professor_srm');
             $table->boolean('profissional_apoio');
+            $table->boolean('especializacao_educacao_especial')->nullable();
             $table->timestamps();
         });
     }
