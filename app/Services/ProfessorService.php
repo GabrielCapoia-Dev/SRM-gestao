@@ -17,6 +17,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\Action;
 
 class ProfessorService
 {
@@ -158,7 +165,23 @@ class ProfessorService
             ->bulkActions($this->acoesEmMassa($user))
             ->filters($this->filtrosTabela())
             ->defaultSort('updated_at', 'desc')
-            ->striped();
+            ->striped()
+            ->headerActions([
+                Action::make('total_listado')
+                    ->label(fn($livewire) => 'Total: ' . number_format(
+                        $livewire->getFilteredTableQuery()->count(),
+                        0,
+                        ',',
+                        '.'
+                    ))
+                    ->disabled()
+                    ->color('gray')
+                    ->icon('heroicon-m-list-bullet')
+                    ->button()
+                    ->extraAttributes([
+                        'class' => 'cursor-default text-xl font-semibold',
+                    ]),
+            ]);
     }
 
     public function colunasTabela(): array
@@ -187,6 +210,7 @@ class ProfessorService
                 ->copyableState(fn($state) => $state)
                 ->url(fn($record) => $record->email ? "mailto:{$record->email}" : null, shouldOpenInNewTab: false)
                 ->sortable()
+                ->wrap()
                 ->searchable()
                 ->toggleable(),
 
@@ -203,6 +227,7 @@ class ProfessorService
                     default          => 'secondary',
                 })
                 ->sortable()
+                ->alignCenter()
                 ->searchable()
                 ->toggleable(),
 
@@ -215,6 +240,7 @@ class ProfessorService
                     'Noite' => 'gray',
                     default => 'secondary',
                 })
+                ->alignCenter()
                 ->sortable()
                 ->searchable(),
 
@@ -224,15 +250,19 @@ class ProfessorService
                 ->trueIcon('heroicon-m-check-circle')
                 ->falseIcon('heroicon-m-x-circle')
                 ->trueColor('success')
+                ->alignCenter()
+                ->sortable()
                 ->falseColor('danger')
                 ->toggleable(),
 
             IconColumn::make('profissional_apoio')
                 ->label('Profissional de Apoio')
                 ->boolean()
+                ->alignCenter()
                 ->trueIcon('heroicon-m-check-circle')
                 ->falseIcon('heroicon-m-x-circle')
                 ->trueColor('success')
+                ->sortable()
                 ->falseColor('danger')
                 ->toggleable(),
 
@@ -285,9 +315,61 @@ class ProfessorService
     public function filtrosTabela(): array
     {
         return [
-            //
+            SelectFilter::make('id_escola')
+                ->label('Escola')
+                ->relationship('escola', 'nome')
+                ->preload()
+                ->searchable()
+                ->indicator('Escola'),
+
+            SelectFilter::make('especializacao')
+                ->label('Especialização')
+                ->options([
+                    'Magisterio'     => 'Magistério',
+                    'Licenciatura'   => 'Licenciatura',
+                    'Bacharelado'    => 'Bacharelado',
+                    'Pos Graduacao'  => 'Pós-Graduação',
+                    'Doutorado'      => 'Doutorado',
+                    'Mestrado'       => 'Mestrado',
+                ])
+                ->indicator('Especialização'),
+
+            SelectFilter::make('turno')
+                ->label('Turno')
+                ->options([
+                    'Manhã' => 'Manhã',
+                    'Tarde' => 'Tarde',
+                    'Noite' => 'Noite',
+                ])
+                ->indicator('Turno'),
+
+            TernaryFilter::make('professor_srm')
+                ->label('Professor SRM')
+                ->trueLabel('Somente SRM')
+                ->falseLabel('Sem SRM')
+                ->placeholder('Todos')
+                ->queries(
+                    true: fn(Builder $q) => $q->where('professor_srm', true),
+                    false: fn(Builder $q) => $q->where('professor_srm', false),
+                    blank: fn(Builder $q) => $q
+                )
+                ->indicator('SRM'),
+
+            TernaryFilter::make('profissional_apoio')
+                ->label('Profissional de Apoio')
+                ->trueLabel('Somente Apoio')
+                ->falseLabel('Sem Apoio')
+                ->placeholder('Todos')
+                ->queries(
+                    true: fn(Builder $q) => $q->where('profissional_apoio', true),
+                    false: fn(Builder $q) => $q->where('profissional_apoio', false),
+                    blank: fn(Builder $q) => $q
+                )
+                ->indicator('Apoio'),
+
         ];
     }
+
 
     public function forcarVinculoComEscola(array $data, ?User $auth): array
     {
