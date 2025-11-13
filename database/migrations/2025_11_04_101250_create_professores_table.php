@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('id_escola')->constrained('escolas')->onDelete('cascade');
             $table->string('matricula')->nullable()->unique();
             $table->string('nome');
-            $table->string('email')->nullable()->unique();
+            $table->string('email')->nullable();
             $table->enum('especializacao', [
                 'Magisterio' => 'Magisterio',
                 'Licenciatura' => 'Licenciatura',

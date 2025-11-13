@@ -62,7 +62,6 @@ class ProfessorService
                     TextInput::make('email')
                         ->columnSpan(5)
                         ->label('E-mail')
-                        ->unique(ignoreRecord: true)
                         ->email(),
 
                 ]),
@@ -173,8 +172,7 @@ class ProfessorService
             TextColumn::make('matricula')
                 ->label('Matrícula')
                 ->sortable()
-                ->searchable()
-                ->toggleable(),
+                ->searchable(),
 
             TextColumn::make('nome')
                 ->label('Nome')
@@ -226,7 +224,7 @@ class ProfessorService
                 ->trueIcon('heroicon-m-check-circle')
                 ->falseIcon('heroicon-m-x-circle')
                 ->trueColor('success')
-                ->falseColor('gray')
+                ->falseColor('danger')
                 ->toggleable(),
 
             IconColumn::make('profissional_apoio')
@@ -235,7 +233,7 @@ class ProfessorService
                 ->trueIcon('heroicon-m-check-circle')
                 ->falseIcon('heroicon-m-x-circle')
                 ->trueColor('success')
-                ->falseColor('gray')
+                ->falseColor('danger')
                 ->toggleable(),
 
             TextColumn::make('created_at')
