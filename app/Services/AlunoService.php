@@ -578,11 +578,10 @@ class AlunoService
                 ->toggleable(isToggledHiddenByDefault: true),
 
             TextColumn::make('laudos.nome')
+                ->badge()
                 ->label('Laudos')
-                ->formatStateUsing(
-                    fn($state, $record) =>
-                    $record->laudos->pluck('nome')->implode(', ')
-                )
+                ->separator(', ')
+
                 ->wrap()
                 ->toggleable(isToggledHiddenByDefault: true),
 
