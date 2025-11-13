@@ -10,6 +10,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 use App\Models\Aluno;
 use App\Models\Turma;
 use App\Models\User;
@@ -206,7 +207,7 @@ class AlunoService
                                                     ->limit(500)
                                                     ->get(['id', 'nome', 'matricula'])
                                                     ->mapWithKeys(function ($p) {
-                                                        $label =($p->matricula ? '#' . $p->matricula . " - " : '') . $p->nome;
+                                                        $label = ($p->matricula ? '#' . $p->matricula . " - " : '') . $p->nome;
                                                         return [$p->id => $label];
                                                     })
                                                     ->all();
@@ -536,7 +537,23 @@ class AlunoService
             ->bulkActions($this->acoesEmMassa($user))
             ->filters($this->filtrosTabela())
             ->defaultSort('updated_at', 'desc')
-            ->striped();
+            ->striped()
+            ->headerActions([
+                Action::make('total_listado')
+                    ->label(fn($livewire) => 'Total: ' . number_format(
+                        $livewire->getFilteredTableQuery()->count(),
+                        0,
+                        ',',
+                        '.'
+                    ))
+                    ->disabled()
+                    ->color('gray')
+                    ->icon('heroicon-m-list-bullet')
+                    ->button()
+                    ->extraAttributes([
+                        'class' => 'cursor-default text-xl font-semibold',
+                    ]),
+            ]);
     }
 
     public function aplicarFiltroPorEscolaDoUsuario(Builder $query, ?User $user): Builder
@@ -711,18 +728,28 @@ class AlunoService
         ];
     }
 
-    private function acoesEmMassa(?User $user): array
+    public function acoesEmMassa(?User $user): array
     {
         return [
             DeleteBulkAction::make(),
 
-            FilamentExportBulkAction::make('exportar_filtrados')
+            FilamentExportBulkAction::make('exportar_xlsx')
                 ->label('Exportar XLSX')
                 ->defaultFormat('xlsx')
+                ->formatStates([
+                    'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                ])
+                ->directDownload(),
+            FilamentExportBulkAction::make('exportar_pdf')
+                ->label('Exportar PDF')
+                ->defaultFormat('pdf')
+                ->color('danger')
+                ->formatStates([
+                    'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                ])
                 ->directDownload(),
         ];
     }
-
     public function desabilitarSelectTurma(?int $idEscola): bool
     {
         return blank($idEscola);

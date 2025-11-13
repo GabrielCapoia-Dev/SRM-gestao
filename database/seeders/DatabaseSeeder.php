@@ -201,6 +201,7 @@ class DatabaseSeeder extends Seeder
             EscolaSeeder::class,
             TurmaSeeder::class,
             ProfessorSeeder::class,
+            AlunoSeeder::class,
         ]);
     }
 

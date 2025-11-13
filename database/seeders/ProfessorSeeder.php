@@ -29,21 +29,15 @@ class ProfessorSeeder extends Seeder
         foreach ($escolas as $escola) {
             $schoolSlug = Str::slug($escola->nome ?: "escola-{$escola->id}", '-');
 
-            $jaTemSrm   = false;
-            $jaTemApoio = false;
-
-            $idxGlobal = 0; // índice global para alternar SRM/Apoio de forma determinística
-
             foreach ($turnos as $turno) {
-                foreach ($especializacoes as $esp) {
-                    // === Regra de mutual exclusão (sempre um dos dois) ===
-                    $professorSrm      = ($idxGlobal % 2 === 0); // pares = SRM
-                    $profissionalApoio = ! $professorSrm;        // ímpares = Apoio
-                    $idxGlobal++;
+                // Para ESTE turno na escola, escolhe 1 índice que será o SRM
+                $idxSrm = random_int(0, count($especializacoes) - 1);
 
-                    // marca presença por escola
-                    if ($professorSrm)      $jaTemSrm   = true;
-                    if ($profissionalApoio) $jaTemApoio = true;
+                foreach ($especializacoes as $idx => $esp) {
+
+                    // === Regra: 1 professor SRM por turno ===
+                    $professorSrm      = ($idx === $idxSrm);
+                    $profissionalApoio = ! $professorSrm && (bool) random_int(0, 1);
 
                     // Nome & e-mail “estáveis”
                     $nomeBase = sprintf(
@@ -72,31 +66,6 @@ class ProfessorSeeder extends Seeder
                         'profissional_apoio' => $profissionalApoio,
                         'especializacao_educacao_especial' => (bool) random_int(0, 1),
                     ]);
-                }
-            }
-
-            // ==== Failsafe: garante pelo menos 1 SRM e 1 Apoio por escola ====
-            if (! $jaTemSrm || ! $jaTemApoio) {
-                $professores = Professor::where('id_escola', $escola->id)->orderBy('id')->get();
-
-                if ($professores->isNotEmpty()) {
-                    if (! $jaTemSrm) {
-                        $p = $professores->first();
-                        $p->update([
-                            'professor_srm'      => true,
-                            'profissional_apoio' => false,
-                        ]);
-                        $jaTemSrm = true;
-                    }
-
-                    if (! $jaTemApoio && $professores->count() > 1) {
-                        $p = $professores->get(1);
-                        $p->update([
-                            'professor_srm'      => false,
-                            'profissional_apoio' => true,
-                        ]);
-                        $jaTemApoio = true;
-                    }
                 }
             }
         }

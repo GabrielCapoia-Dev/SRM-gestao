@@ -10,7 +10,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Filament\Pages\SubNavigationPosition;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
 
 class CaeiResource extends Resource
@@ -25,6 +27,7 @@ class CaeiResource extends Resource
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?string $cluster = AlunoCluster::class;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -35,6 +38,22 @@ class CaeiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Action::make('total_listado')
+                    ->label(fn($livewire) => 'Total: ' . number_format(
+                        $livewire->getFilteredTableQuery()->count(),
+                        0,
+                        ',',
+                        '.'
+                    ))
+                    ->disabled()
+                    ->color('gray')
+                    ->icon('heroicon-m-list-bullet')
+                    ->button()
+                    ->extraAttributes([
+                        'class' => 'cursor-default text-xl font-semibold',
+                    ]),
+            ])
             ->columns([
                 TextColumn::make('turma.escola.nome')
                     ->label('Escola')
@@ -66,21 +85,27 @@ class CaeiResource extends Resource
                 TextColumn::make('encaminhado_para_caei')
                     ->label('Encaminhado para CAEI')
                     ->badge()
-                    ->color(fn (?string $state) => $state === 'Sim' ? 'success' : 'secondary'),
+                    ->color(fn(?string $state) => match ($state) {
+                        'Sim' => 'success',
+                        'Nao' => 'danger',
+                        'Não' => 'danger',
+                        default => 'secondary',
+                    }),
 
                 TextColumn::make('encaminhado_para_especialista')
                     ->label('Encaminhado para Especialista')
                     ->badge()
-                    ->color(fn (?string $state) => $state === 'Sim' ? 'success' : 'secondary')
+                    ->color(fn(?string $state) => $state === 'Sim' ? 'success' : 'secondary')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('status_fonoaudiologo')
                     ->label('Fonoaudiólogo')
                     ->badge()
-                    ->color(fn (?string $state) => match ($state) {
+                    ->color(fn(?string $state) => match ($state) {
                         'Sim' => 'success',
                         'Lista de Espera' => 'warning',
                         'Nao' => 'danger',
+                        'Não' => 'danger',
                         default => 'secondary',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -88,7 +113,7 @@ class CaeiResource extends Resource
                 TextColumn::make('status_psicologo')
                     ->label('Psicólogo')
                     ->badge()
-                    ->color(fn (?string $state) => match ($state) {
+                    ->color(fn(?string $state) => match ($state) {
                         'Sim' => 'success',
                         'Lista de Espera' => 'warning',
                         'Nao' => 'danger',
@@ -99,7 +124,7 @@ class CaeiResource extends Resource
                 TextColumn::make('status_psicopedagogo')
                     ->label('Psicopedagogo')
                     ->badge()
-                    ->color(fn (?string $state) => match ($state) {
+                    ->color(fn(?string $state) => match ($state) {
                         'Sim' => 'success',
                         'Lista de Espera' => 'warning',
                         'Nao' => 'danger',
@@ -110,7 +135,7 @@ class CaeiResource extends Resource
                 TextColumn::make('avanco_caei')
                     ->label('Avanço CAEI')
                     ->badge()
-                    ->color(fn (?string $state) => match ($state) {
+                    ->color(fn(?string $state) => match ($state) {
                         'Sim' => 'success',
                         'Nao' => 'danger',
                         'Nao está em atendimento' => 'secondary',
@@ -127,9 +152,24 @@ class CaeiResource extends Resource
                         'Nao' => 'Não',
                     ]),
             ])
-            ->actions([
-            ])
-            ->bulkActions([]);
+            ->actions([])
+                        ->bulkActions([
+                FilamentExportBulkAction::make('exportar_xlsx')
+                    ->label('Exportar XLSX')
+                    ->defaultFormat('xlsx')
+                    ->formatStates([
+                        'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                    ])
+                    ->directDownload(),
+                FilamentExportBulkAction::make('exportar_pdf')
+                    ->label('Exportar PDF')
+                    ->defaultFormat('pdf')
+                    ->color('danger')
+                    ->formatStates([
+                        'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                    ])
+                    ->directDownload(),
+            ]);
     }
 
     public static function getEloquentQuery(): Builder
@@ -138,11 +178,11 @@ class CaeiResource extends Resource
         return parent::getEloquentQuery()
             ->where(function ($q) {
                 $q->where('encaminhado_para_caei', 'Sim')
-                  ->orWhereNotNull('encaminhado_para_especialista')
-                  ->orWhereNotNull('status_fonoaudiologo')
-                  ->orWhereNotNull('status_psicologo')
-                  ->orWhereNotNull('status_psicopedagogo')
-                  ->orWhereNotNull('avanco_caei');
+                    ->orWhereNotNull('encaminhado_para_especialista')
+                    ->orWhereNotNull('status_fonoaudiologo')
+                    ->orWhereNotNull('status_psicologo')
+                    ->orWhereNotNull('status_psicopedagogo')
+                    ->orWhereNotNull('avanco_caei');
             })
             ->with(['turma.escola', 'turma.serie']);
     }
