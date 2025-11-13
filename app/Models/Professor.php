@@ -15,6 +15,10 @@ class Professor extends Model
         'matricula',
         'nome',
         'email',
+        'especializacao',
+        'turno',
+        'professor_srm',
+        'profissional_apoio'
     ];
 
     public function alunos()

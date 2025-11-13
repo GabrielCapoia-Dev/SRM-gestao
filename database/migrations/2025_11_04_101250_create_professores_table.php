@@ -17,6 +17,17 @@ return new class extends Migration
             $table->string('matricula')->nullable()->unique();
             $table->string('nome');
             $table->string('email')->nullable()->unique();
+            $table->enum('especializacao', [
+                'Magisterio' => 'Magisterio',
+                'Licenciatura' => 'Licenciatura',
+                'Bacharelado' => 'Bacharelado',
+                'Pos Graduacao' => 'Pos Graduacao',
+                'Doutorado' => 'Doutorado',
+                'Mestrado' => 'Mestrado',
+            ])->nullable();
+            $table->enum('turno', ['Manhã', 'Tarde','Noite'])->nullable();
+            $table->boolean('professor_srm');
+            $table->boolean('profissional_apoio');
             $table->timestamps();
         });
     }
