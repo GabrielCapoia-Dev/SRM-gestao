@@ -27,6 +27,8 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
@@ -111,7 +113,7 @@ class AlunoService
                                                 ->options(fn() => $this->escolaService->opcoesDeEscolasParaUsuario(Auth::user()))
                                                 ->searchable()
                                                 ->preload()
-                                                ->columnSpan(7)
+                                                ->columnSpan(5)
                                                 ->required()
                                                 ->default(fn($record) => $this->escolaInicialParaForm($record, Auth::user()))
                                                 ->afterStateHydrated(function ($state, callable $set, $record) {
@@ -120,7 +122,12 @@ class AlunoService
                                                 ->dehydrated(false)
                                                 ->disabled(fn() => $this->deveTravarCampoEscola(Auth::user()))
                                                 ->reactive()
-                                                ->afterStateUpdated(fn($state, callable $set) => $set('id_turma', null)),
+                                                ->afterStateUpdated(function ($state, Set $set) {
+                                                    $set('id_turma', null);
+                                                    $set('turno_turma', null);
+                                                    $set('id_professor', null);
+                                                    $set('profissional_apoio', false);
+                                                }),
 
                                             Select::make('id_turma')
                                                 ->label('Turma')
@@ -135,25 +142,35 @@ class AlunoService
                                                     return $this->desabilitarSelectTurma($idEscola);
                                                 })
                                                 ->reactive()
-                                                ->columnSpan(5)
+                                                ->afterStateUpdated(function ($state, Set $set) {
+                                                    $set('turno_turma', Turma::whereKey($state)->value('turno'));
+                                                    $set('id_professor', null);
+                                                })
+                                                ->columnSpan(4)
                                                 ->placeholder('Selecione a turma'),
-                                        ]),
-                                    Grid::make(3)
-                                        ->schema([
-                                            Checkbox::make('dificuldade_aprendizagem')
-                                                ->columnSpan(3)
-                                                ->label('Apresenta dificuldade na aprendizagem?'),
 
-                                            Checkbox::make('frequenta_srm')
+                                            Select::make('turno_turma')
+                                                ->label('Turno da turma')
+                                                ->options([
+                                                    'Manhã' => 'Manhã',
+                                                    'Tarde' => 'Tarde',
+                                                    'Noite' => 'Noite',
+                                                ])
+                                                ->native(false)
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->visible(fn(Get $get) => filled($get('id_turma')))
                                                 ->columnSpan(3)
-                                                ->label('Frequenta Sala de Recursos Multifuncionais?'),
-
-                                            Checkbox::make('encaminhado_para_SME')
-                                                ->columnSpan(3)
-                                                ->label('Encaminhado(a) para a Equipe Multiprofissional da SME?'),
+                                                ->afterStateHydrated(function (Set $set, Get $get, $record) {
+                                                    $idTurma = $get('id_turma') ?? $record?->id_turma;
+                                                    if ($idTurma) {
+                                                        $set('turno_turma', Turma::whereKey($idTurma)->value('turno'));
+                                                    }
+                                                }),
                                         ]),
                                 ])
-                                ->columnSpan(6),
+                                ->columnSpan(8),
+
 
 
                             Fieldset::make('Profissional de Apoio')
@@ -171,19 +188,72 @@ class AlunoService
                                         Select::make('id_professor')
                                             ->label('Profissional de Apoio')
                                             ->options(function (Get $get) {
-                                                $user = Auth::user();
+                                                $user     = Auth::user();
                                                 $idEscola = $get('id_escola') ?? $user?->id_escola;
+                                                $idTurma  = $get('id_turma');
 
-                                                return $this->opcoesDeProfissionaisParaEscola($idEscola);
+                                                if (! $idTurma) {
+                                                    return [];
+                                                }
+
+                                                $turno = Turma::whereKey($idTurma)->value('turno');
+
+                                                return Professor::query()
+                                                    ->where('id_escola', $idEscola)
+                                                    ->where('profissional_apoio', true)
+                                                    ->where('turno', $turno)
+                                                    ->orderBy('nome')
+                                                    ->limit(500)
+                                                    ->get(['id', 'nome', 'matricula'])
+                                                    ->mapWithKeys(function ($p) {
+                                                        $label =($p->matricula ? '#' . $p->matricula . " - " : '') . $p->nome;
+                                                        return [$p->id => $label];
+                                                    })
+                                                    ->all();
                                             })
                                             ->searchable()
                                             ->preload()
+                                            ->reactive()
+                                            ->disabled(fn(Get $get) => ! $get('profissional_apoio') || ! $get('id_turma'))
                                             ->hidden(fn(Get $get) => ! $get('profissional_apoio'))
                                             ->dehydrated(fn(Get $get) => (bool) $get('profissional_apoio'))
-                                            ->required(fn(Get $get) => (bool) $get('profissional_apoio')),
+                                            ->required(fn(Get $get) => (bool) $get('profissional_apoio') && (bool) $get('id_turma'))
+                                            ->placeholder(fn(Get $get) => $get('id_turma') ? 'Selecione o profissional de apoio' : 'Selecione uma turma primeiro')
+                                            ->helperText(fn(Get $get) => $get('id_turma') ? null : 'Selecione uma turma primeiro')
+                                            ->rules(function (Get $get) {
+                                                if (! $get('profissional_apoio') || ! $get('id_turma')) {
+                                                    return [];
+                                                }
+
+                                                $idEscola = $get('id_escola') ?? Auth::user()?->id_escola;
+                                                $turno    = Turma::whereKey($get('id_turma'))->value('turno');
+
+                                                return [
+                                                    Rule::exists('professores', 'id')
+                                                        ->where('profissional_apoio', true)
+                                                        ->when($idEscola, fn($q) => $q->where('id_escola', $idEscola))
+                                                        ->when($turno,   fn($q) => $q->where('turno', $turno)),
+                                                ];
+                                            })
+
                                     ]),
                                 ])
-                                ->columnSpan(6),
+                                ->columnSpan(4),
+
+                            Grid::make(12)
+                                ->schema([
+                                    Checkbox::make('frequenta_srm')
+                                        ->columnSpan(4)
+                                        ->label('Frequenta Sala de Recursos Multifuncionais?'),
+
+                                    Checkbox::make('dificuldade_aprendizagem')
+                                        ->columnSpan(4)
+                                        ->label('Apresenta dificuldade na aprendizagem?'),
+
+                                    Checkbox::make('encaminhado_para_SME')
+                                        ->columnSpan(4)
+                                        ->label('Encaminhado(a) para a Equipe Multiprofissional da SME?'),
+                                ]),
                         ])
                 ]),
 
@@ -241,7 +311,7 @@ class AlunoService
                                                             '4 ou mais' => '4 ou mais',
                                                         ]),
 
-                                                    Select::make('id_serie') // ajuste aqui pro nome real da coluna FK
+                                                    Select::make('id_serie')
                                                         ->label('Série em que foi retido')
                                                         ->options(fn() => Serie::all()->pluck('nome', 'id'))
                                                         ->columnSpan(3)
@@ -422,6 +492,23 @@ class AlunoService
 
         ];
     }
+
+    public function opcoesDeProfissionaisApoioParaEscola(?int $idEscola, ?string $turno = null): array
+    {
+        if (! $idEscola) {
+            return [];
+        }
+
+        return Professor::query()
+            ->where('id_escola', $idEscola)
+            ->where('profissional_apoio', true)
+            ->when($turno, fn($q) => $q->where('turno', $turno))
+            ->orderBy('nome')
+            ->limit(500)
+            ->pluck('nome', 'id')
+            ->all();
+    }
+
 
     public function opcoesDeProfissionaisParaEscola(?int $idEscola): array
     {
