@@ -59,7 +59,11 @@ class RetencaoResource extends Resource
                 TextColumn::make('aluno.cgm')
                     ->label('CGM')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('Copiado!')
+                    ->copyableState(fn($state) => $state)
+                    ->tooltip('Clique para copiar'),
 
                 TextColumn::make('aluno.nome')
                     ->label('Aluno')
@@ -140,7 +144,7 @@ class RetencaoResource extends Resource
                 // Se for só leitura, deixa sem Edit:
                 // Tables\Actions\EditAction::make(),
             ])
-                        ->bulkActions([
+            ->bulkActions([
                 FilamentExportBulkAction::make('exportar_xlsx')
                     ->label('Exportar XLSX')
                     ->defaultFormat('xlsx')

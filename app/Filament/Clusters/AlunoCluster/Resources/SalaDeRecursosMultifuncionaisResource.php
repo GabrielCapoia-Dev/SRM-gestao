@@ -76,7 +76,11 @@ class SalaDeRecursosMultifuncionaisResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->copyable()
+                    ->copyMessage('Copiado!')
+                    ->copyableState(fn($state) => $state)
+                    ->tooltip('Clique para copiar'),
 
                 Tables\Columns\TextColumn::make('nome')
                     ->label('Aluno')

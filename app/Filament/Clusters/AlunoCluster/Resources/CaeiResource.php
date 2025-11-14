@@ -74,7 +74,11 @@ class CaeiResource extends Resource
                 TextColumn::make('cgm')
                     ->label('CGM')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('Copiado!')
+                    ->copyableState(fn($state) => $state)
+                    ->tooltip('Clique para copiar'),
 
                 TextColumn::make('nome')
                     ->label('Aluno')
@@ -91,12 +95,6 @@ class CaeiResource extends Resource
                         'Não' => 'danger',
                         default => 'secondary',
                     }),
-
-                TextColumn::make('encaminhado_para_especialista')
-                    ->label('Encaminhado para Especialista')
-                    ->badge()
-                    ->color(fn(?string $state) => $state === 'Sim' ? 'success' : 'secondary')
-                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('status_fonoaudiologo')
                     ->label('Fonoaudiólogo')
@@ -138,22 +136,50 @@ class CaeiResource extends Resource
                     ->color(fn(?string $state) => match ($state) {
                         'Sim' => 'success',
                         'Nao' => 'danger',
-                        'Nao está em atendimento' => 'secondary',
+                        'Nao está em atendimento' => 'warning',
                         default => 'secondary',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // Exemplo: mostrar só realmente encaminhados
                 Tables\Filters\SelectFilter::make('encaminhado_para_caei')
                     ->label('Encaminhado CAEI')
                     ->options([
                         'Sim' => 'Sim',
                         'Nao' => 'Não',
                     ]),
+
+                Tables\Filters\SelectFilter::make('avanco_caei')
+                    ->label('Avanço CAEI')
+                    ->options([
+                        'Sim' => 'Sim',
+                        'Nao' => 'Não',
+                        'Nao está em atendimento' => 'Não está em atendimento',
+                    ]),
+                Tables\Filters\SelectFilter::make('status_psicopedagogo')
+                    ->label('Psicopedagogo')
+                    ->options([
+                        'Sim' => 'Sim',
+                        'Nao' => 'Não',
+                        'Lista de Espera' => 'Lista de Espera',
+                    ]),
+                Tables\Filters\SelectFilter::make('status_psicologo')
+                    ->label('Psicólogo')
+                    ->options([
+                        'Sim' => 'Sim',
+                        'Nao' => 'Não',
+                        'Lista de Espera' => 'Lista de Espera',
+                    ]),
+                Tables\Filters\SelectFilter::make('status_fonoaudiologo')
+                    ->label('Fonoaudiólogo')
+                    ->options([
+                        'Sim' => 'Sim',
+                        'Nao' => 'Não',
+                        'Lista de Espera' => 'Lista de Espera',
+                    ]),
             ])
             ->actions([])
-                        ->bulkActions([
+            ->bulkActions([
                 FilamentExportBulkAction::make('exportar_xlsx')
                     ->label('Exportar XLSX')
                     ->defaultFormat('xlsx')
@@ -178,7 +204,6 @@ class CaeiResource extends Resource
         return parent::getEloquentQuery()
             ->where(function ($q) {
                 $q->where('encaminhado_para_caei', 'Sim')
-                    ->orWhereNotNull('encaminhado_para_especialista')
                     ->orWhereNotNull('status_fonoaudiologo')
                     ->orWhereNotNull('status_psicologo')
                     ->orWhereNotNull('status_psicopedagogo')

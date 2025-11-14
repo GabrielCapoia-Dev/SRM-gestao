@@ -367,7 +367,7 @@ class AlunoService
                                 ->columns(12)
                                 ->schema([
                                     Radio::make('encaminhado_para_caei')
-                                        ->label('Encaminhado(a) para a Equipe Multiprofissional da CAEI?')
+                                        ->label('Encaminhado(a) para a atendimento no CAEI?')
                                         ->columns(2)
                                         ->columnSpan(5)
                                         ->options([
@@ -377,7 +377,6 @@ class AlunoService
                                         ->reactive()
                                         ->afterStateUpdated(function ($state, Set $set) {
                                             if (! in_array('Sim', (array) $state, true)) {
-                                                $set('encaminhado_para_especialista', null);
                                                 $set('fonoaudiologo', null);
                                                 $set('psicologo', null);
                                                 $set('psicopedagogo', null);
@@ -390,27 +389,8 @@ class AlunoService
                                         ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                         ->columns(12)
                                         ->schema([
-                                            Radio::make('encaminhado_para_especialista')
-                                                ->label('Encaminhado(a) para um especialista?')
-                                                ->columns(2)
-                                                ->columnSpan(7)
-                                                ->options([
-                                                    'Sim' => 'Sim',
-                                                    'Nao' => 'Não',
-                                                ])
-                                                ->reactive()
-                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
-                                                ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
-                                                ->afterStateUpdated(function ($state, Set $set) {
-                                                    if (! in_array('Sim', (array) $state, true)) {
-                                                        $set('fonoaudiologo', null);
-                                                        $set('psicologo', null);
-                                                        $set('psicopedagogo', null);
-                                                    }
-                                                }),
-
                                             Grid::make()
-                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
+                                                ->hidden(fn(Get $get) => ! in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                                 ->columnSpan(6)
                                                 ->schema([
                                                     Radio::make('status_fonoaudiologo')
@@ -418,24 +398,24 @@ class AlunoService
                                                         ->columnSpan(6)
                                                         ->columns(3)
                                                         ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
-                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
-                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
 
                                                     Radio::make('status_psicologo')
                                                         ->label('Psicólogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
                                                         ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
-                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
-                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
 
                                                     Radio::make('status_psicopedagogo')
                                                         ->label('Psicopedagogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
                                                         ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
-                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true))
-                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_especialista'), true)),
+                                                        ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
+                                                        ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
                                                 ]),
                                         ]),
                                     Fieldset::make()
@@ -495,6 +475,7 @@ class AlunoService
                                                 ->disk('laudos')
                                                 ->directory(fn(Get $get) => 'aluno-' . ($get('cgm') ?? 'sem-cgm'))
                                                 ->openable(false)
+                                                ->required()
                                                 ->previewable(false)
                                                 ->acceptedFileTypes(['application/pdf'])
                                                 ->columnSpan(8),
@@ -612,7 +593,11 @@ class AlunoService
                 ->label('CGM')
                 ->wrap()
                 ->sortable()
-                ->searchable(),
+                ->searchable()
+                ->copyable()
+                ->copyMessage('Copiado!')
+                ->copyableState(fn($state) => $state)
+                ->tooltip('Clique para copiar'),
 
             TextColumn::make('nome')
                 ->label('Nome')
