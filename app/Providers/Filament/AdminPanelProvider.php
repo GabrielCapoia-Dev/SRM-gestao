@@ -20,6 +20,8 @@ use Filament\Http\Middleware\Authenticate;
 use App\Livewire\LoginPage;
 use App\Services\UserService;
 use Hasnayeen\Themes\ThemesPlugin;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LaudoArquivoController;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,7 +35,9 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->routes(function () {})
+            ->routes(function () {
+                
+            })
             ->default()
             ->id('admin')
             ->path('admin')

@@ -463,6 +463,7 @@ class AlunoService
                 ]),
             Section::make('Informações Medicas')
                 ->collapsible()
+                ->visible(fn() => $this->userService->podeAnexarLaudos(Auth::user()))
                 ->schema([
                     Grid::make(12)
                         ->schema([
@@ -476,6 +477,10 @@ class AlunoService
                                         ->collapsible()
                                         ->columnSpan(12)
                                         ->columns(12)
+                                        // Só pode mexer se tiver permissão de anexar:
+                                        ->disabled(fn() => ! $this->userService->podeAnexarLaudos(Auth::user()))
+                                        ->deletable(fn() => $this->userService->podeExcluirLaudos(Auth::user()))
+                                        ->addable(fn() => $this->userService->podeAnexarLaudos(Auth::user()))
                                         ->schema([
                                             Select::make('laudo_id')
                                                 ->label('Laudo')
@@ -487,9 +492,9 @@ class AlunoService
 
                                             FileUpload::make('anexo_laudo_path')
                                                 ->label('Arquivo (PDF)')
-                                                ->disk('public')
-                                                ->directory('laudos')
-                                                ->openable()
+                                                ->disk('laudos')
+                                                ->directory(fn(Get $get) => 'aluno-' . ($get('cgm') ?? 'sem-cgm'))
+                                                ->openable(false)
                                                 ->previewable(false)
                                                 ->acceptedFileTypes(['application/pdf'])
                                                 ->columnSpan(8),
@@ -696,11 +701,12 @@ class AlunoService
                 ->state(fn(Aluno $record) => $record->laudos->count())
                 ->formatStateUsing(fn(int $state) => $state > 0 ? $state . ' laudo(s)' : '-')
                 ->toggleable(isToggledHiddenByDefault: false)
-                
+                ->visible(fn() => $this->userService->podeVerLaudos(Auth::user()))
                 ->action(
                     Action::make('ver_laudos')
                         ->modal()
                         ->slideOver()
+                        ->visible(fn() => $this->userService->podeVerLaudos(Auth::user()))
                         ->modalCancelAction(false)
                         ->modalSubmitAction(false)
                         ->modalHeading(fn(Aluno $record) => "Laudos de {$record->nome}")

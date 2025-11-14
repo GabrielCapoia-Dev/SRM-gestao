@@ -33,6 +33,8 @@ use Illuminate\Support\Facades\Event;
 use App\Services\UserService;
 use Hasnayeen\Themes\Themes;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AlunoLaudo;
+use App\Policies\AlunoLaudoPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Aluno::class, AlunoPolicy::class);
         Gate::policy(Professor::class, ProfessorPolicy::class);
         Gate::policy(Laudo::class, LaudoPolicy::class);
+        Gate::policy(AlunoLaudo::class, AlunoLaudoPolicy::class);
+
         Gate::define('admin-only', function ($user) {
             return $user->hasRole('Admin');
         });

@@ -60,6 +60,10 @@ class DatabaseSeeder extends Seeder
             'Criar Laudos',
             'Editar Laudos',
             'Excluir Laudos',
+            'Visualizar Laudos de Aluno',
+            'Baixar Laudos de Aluno',
+            'Anexar Laudos de Aluno',
+            'Excluir Laudos de Aluno',
         ];
 
         $permissionsSecretario = [
