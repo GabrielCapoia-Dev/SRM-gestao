@@ -96,7 +96,7 @@ class AlunoSeeder extends Seeder
 
         foreach ($turmas as $turma) {
             // Quantidade de alunos por turma
-            $quantidadeAlunos = $faker->numberBetween(12, 30);
+            $quantidadeAlunos = $faker->numberBetween(1, 3);
 
             for ($i = 0; $i < $quantidadeAlunos; $i++) {
                 // Sexo compatível com o ENUM
@@ -122,20 +122,20 @@ class AlunoSeeder extends Seeder
                 // Encaminhamentos (ENUM 'Sim' / 'Nao')
                 $encSme = $frequentaSrm && $faker->boolean(40) ? 'Sim' : 'Nao';
                 $encCaei = $frequentaSrm && $faker->boolean(50) ? 'Sim' : 'Nao';
-                $encEsp = $frequentaSrm && $faker->boolean(35) ? 'Sim' : 'Nao';
 
-                // Status dos profissionais (ENUM 'Sim', 'Nao', 'Lista de Espera', ou null)
+                // Status dos profissionais (ENUM: 'Sim', 'Nao', 'Lista de Espera')
                 $statusFono = $frequentaSrm && $faker->boolean(50)
                     ? Arr::random($statusAcompanhamentoEnum)
-                    : null;
+                    : 'Nao';
 
                 $statusPsico = $frequentaSrm && $faker->boolean(50)
                     ? Arr::random($statusAcompanhamentoEnum)
-                    : null;
+                    : 'Nao';
 
                 $statusPsicoped = $frequentaSrm && $faker->boolean(50)
                     ? Arr::random($statusAcompanhamentoEnum)
-                    : null;
+                    : 'Nao';
+
 
                 // Avanço CAEI (ENUM 'Sim', 'Nao', 'Nao está em atendimento')
                 if ($encCaei === 'Sim') {
@@ -171,7 +171,6 @@ class AlunoSeeder extends Seeder
                     'frequenta_srm'             => $frequentaSrm,
                     'encaminhado_para_sme'      => $encSme,
                     'encaminhado_para_caei'     => $encCaei,
-                    'encaminhado_para_especialista' => $encEsp,
                     'status_fonoaudiologo'      => $statusFono,
                     'status_psicologo'          => $statusPsico,
                     'ja_foi_retido'             => 'Nao',

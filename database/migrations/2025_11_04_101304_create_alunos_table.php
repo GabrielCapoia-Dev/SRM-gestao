@@ -28,7 +28,6 @@ return new class extends Migration
             $table->enum('ja_foi_retido' , ['Sim', 'Nao']);
 
             $table->enum('encaminhado_para_caei', ['Sim', 'Nao']);
-            $table->enum('encaminhado_para_especialista', ['Sim', 'Nao']);
 
             $table->enum('status_fonoaudiologo', ['Sim', 'Nao', 'Lista de Espera'])->nullable();
             $table->enum('status_psicologo', ['Sim', 'Nao', 'Lista de Espera'])->nullable();

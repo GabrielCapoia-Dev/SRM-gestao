@@ -52,7 +52,7 @@ class ProfessorService
                         ->rules(['regex:/^\d+$/'])
                         ->validationMessages([
                             'regex' => 'Apenas numeros',
-                            'min' => 'O CGM deve ter no mínimo 3 dígitos.',
+                            'min' => 'A matricula deve ter no mínimo 3 dígitos.',
                         ])
                         ->unique(ignoreRecord: true)
                         ->maxLength(20),

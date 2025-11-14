@@ -19,7 +19,6 @@ class Aluno extends Model
         'frequenta_srm',
         'encaminhado_para_sme',
         'encaminhado_para_caei',
-        'encaminhado_para_especialista',
         'status_fonoaudiologo',
         'status_psicologo',
         'ja_foi_retido',

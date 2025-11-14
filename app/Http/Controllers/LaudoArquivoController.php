@@ -8,38 +8,51 @@ use Illuminate\Filesystem\FilesystemAdapter;
 
 class LaudoArquivoController extends Controller
 {
-
-
     protected function laudosDisk(): FilesystemAdapter
     {
         return Storage::disk('laudos');
     }
 
-
     public function show(AlunoLaudo $alunoLaudo)
     {
         // policy: view
         $this->authorize('view', $alunoLaudo);
+
         $disk = $this->laudosDisk();
         $path = $alunoLaudo->anexo_laudo_path;
 
-        abort_unless($disk->exists($path), 404);
+        // Se não tiver caminho ou não for string válida → 404
+        if (blank($path) || ! is_string($path)) {
+            return abort(404);
+        }
 
-        return $this->laudosDisk()->response($path);
+        if (! $disk->exists($path)) {
+            return abort(404);
+        }
+
+        return $disk->response($path);
     }
 
     public function download(AlunoLaudo $alunoLaudo)
     {
         // policy: download
         $this->authorize('download', $alunoLaudo);
+
         $disk = $this->laudosDisk();
         $path = $alunoLaudo->anexo_laudo_path;
 
-        abort_unless($disk->exists($path), 404);
+        // Mesmo tratamento aqui
+        if (blank($path) || ! is_string($path)) {
+            return abort(404);
+        }
+
+        if (! $disk->exists($path)) {
+            return abort(404);
+        }
 
         $filename = $this->makeFilename($alunoLaudo);
 
-        return $this->laudosDisk()->download($path, $filename);
+        return $disk->download($path, $filename);
     }
 
     protected function makeFilename(AlunoLaudo $alunoLaudo): string
