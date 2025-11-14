@@ -80,7 +80,13 @@ class AlunoSeeder extends Seeder
         ];
 
         // Status de acompanhamento compatíveis com os ENUMs
-        $statusAcompanhamentoEnum = ['Sim', 'Nao', 'Lista de Espera'];
+        $statusAcompanhamentoEnum = [
+            'Sim, Lista de Espera',
+            'Sim, Em Atendimento',
+            'Sim, Desistente',
+            'Sim, Desligado',
+            'Não',
+        ];
 
         $vezesRetidoEnum = ['1 vez', '2 vezes', '3 vezes', '4 ou mais'];
 
@@ -96,7 +102,7 @@ class AlunoSeeder extends Seeder
 
         foreach ($turmas as $turma) {
             // Quantidade de alunos por turma
-            $quantidadeAlunos = $faker->numberBetween(1, 3);
+            $quantidadeAlunos = $faker->numberBetween(0, 2);
 
             for ($i = 0; $i < $quantidadeAlunos; $i++) {
                 // Sexo compatível com o ENUM

@@ -8,7 +8,9 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use App\Models\Aluno;
@@ -28,7 +30,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -397,7 +399,13 @@ class AlunoService
                                                         ->label('Fonoaudiólogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
-                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->options([
+                                                            'Sim, Lista de Espera' => 'Sim, Lista de Espera',
+                                                            'Sim, Em Atendimento' => 'Sim, Em Atendimento',
+                                                            'Sim, Desistente' => 'Sim, Desistente',
+                                                            'Sim, Desligado' => 'Sim, Desligado',
+                                                            'Não' => 'Não',
+                                                        ])
                                                         ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                                         ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
 
@@ -405,7 +413,13 @@ class AlunoService
                                                         ->label('Psicólogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
-                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->options([
+                                                            'Sim, Lista de Espera' => 'Sim, Lista de Espera',
+                                                            'Sim, Em Atendimento' => 'Sim, Em Atendimento',
+                                                            'Sim, Desistente' => 'Sim, Desistente',
+                                                            'Sim, Desligado' => 'Sim, Desligado',
+                                                            'Não' => 'Não',
+                                                        ])
                                                         ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                                         ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
 
@@ -413,7 +427,13 @@ class AlunoService
                                                         ->label('Psicopedagogo')
                                                         ->columnSpan(6)
                                                         ->columns(3)
-                                                        ->options(['Sim' => 'Sim', 'Não' => 'Não', 'Lista de Espera' => 'Lista de Espera'])
+                                                        ->options([
+                                                            'Sim, Lista de Espera' => 'Sim, Lista de Espera',
+                                                            'Sim, Em Atendimento' => 'Sim, Em Atendimento',
+                                                            'Sim, Desistente' => 'Sim, Desistente',
+                                                            'Sim, Desligado' => 'Sim, Desligado',
+                                                            'Não' => 'Não',
+                                                        ])
                                                         ->dehydrated(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true))
                                                         ->required(fn(Get $get) => in_array('Sim', (array) $get('encaminhado_para_caei'), true)),
                                                 ]),
@@ -530,8 +550,9 @@ class AlunoService
             ->columns($this->colunasTabela())
             ->actions($this->acoesTabela($user))
             ->bulkActions($this->acoesEmMassa($user))
-            ->filters($this->filtrosTabela())
+            ->filters($this->filtrosTabela(), layout: FiltersLayout::AboveContent)
             ->defaultSort('updated_at', 'desc')
+            ->filtersFormColumns(12)
             ->striped()
             ->headerActions([
                 Action::make('total_listado')
@@ -543,7 +564,6 @@ class AlunoService
                     ))
                     ->disabled()
                     ->color('gray')
-                    ->icon('heroicon-m-list-bullet')
                     ->button()
                     ->extraAttributes([
                         'class' => 'cursor-default text-xl font-semibold',
@@ -579,13 +599,13 @@ class AlunoService
 
             TextColumn::make('turma.serie.nome')
                 ->label('Série')
-                ->wrap()
+                ->alignCenter()
                 ->sortable()
                 ->searchable(),
 
             TextColumn::make('turma.turma')
                 ->label('Turma')
-                ->wrap()
+                ->alignCenter()
                 ->sortable()
                 ->searchable(),
 
@@ -593,6 +613,7 @@ class AlunoService
                 ->label('CGM')
                 ->wrap()
                 ->sortable()
+                ->alignCenter()
                 ->searchable()
                 ->copyable()
                 ->copyMessage('Copiado!')
@@ -601,52 +622,52 @@ class AlunoService
 
             TextColumn::make('nome')
                 ->label('Nome')
-                ->wrap()
+                ->alignCenter()
                 ->sortable()
                 ->searchable(),
 
             TextColumn::make('professor.nome')
                 ->label('Profissional de Apoio')
                 ->wrap()
+                ->alignCenter()
                 ->sortable()
                 ->searchable()
                 ->toggleable(isToggledHiddenByDefault: true),
 
-            ToggleColumn::make('dificuldade_aprendizagem')
+            IconColumn::make('dificuldade_aprendizagem')
                 ->label('Dificuldade de Aprendizagem')
+                ->boolean()
+                ->trueIcon('heroicon-o-check-circle')
+                ->falseIcon('heroicon-o-x-circle')
+                ->trueColor('success')
+                ->falseColor('danger')
+                ->alignCenter()
                 ->sortable()
-                ->disabled()
-                ->visible()
-                ->inline(false)
-                ->onColor('success')
-                ->offColor('danger')
-                ->onIcon('heroicon-s-check')
-                ->offIcon('heroicon-s-x-mark')
                 ->toggleable(isToggledHiddenByDefault: true),
 
-            ToggleColumn::make('frequenta_srm')
+            IconColumn::make('frequenta_srm')
                 ->label('Frequenta SRM')
+                ->boolean()
+                ->trueIcon('heroicon-o-check-circle')
+                ->falseIcon('heroicon-o-x-circle')
+                ->trueColor('success')
+                ->falseColor('danger')
+                ->alignCenter()
                 ->sortable()
-                ->disabled()
-                ->visible()
-                ->inline(false)
-                ->onColor('success')
-                ->offColor('danger')
-                ->onIcon('heroicon-s-check')
-                ->offIcon('heroicon-s-x-mark')
                 ->toggleable(isToggledHiddenByDefault: true),
 
-            ToggleColumn::make('encaminhado_para_sme')
+            IconColumn::make('encaminhado_para_sme')
                 ->label('Encaminhado para SME')
+                ->boolean()
+                ->trueIcon('heroicon-o-check-circle')
+                ->falseIcon('heroicon-o-x-circle')
+                ->trueColor('success')
+                ->falseColor('danger')
+                ->alignCenter()
                 ->sortable()
-                ->disabled()
-                ->visible()
-                ->inline(false)
-                ->onColor('success')
-                ->offColor('danger')
-                ->onIcon('heroicon-s-check')
-                ->offIcon('heroicon-s-x-mark')
                 ->toggleable(isToggledHiddenByDefault: true),
+
+
             TextColumn::make('data_nascimento')
                 ->label('Data de Nascimento')
                 ->wrap()
@@ -681,7 +702,7 @@ class AlunoService
                 ->toggleable(isToggledHiddenByDefault: true),
 
             TextColumn::make('laudos_count')
-                ->label('Laudos')
+                ->label('Laudos Anexados')
                 ->tooltip('Clique para ver os laudos')
                 ->state(fn(Aluno $record) => $record->laudos->count())
                 ->formatStateUsing(fn(int $state) => $state > 0 ? $state . ' laudo(s)' : '-')
@@ -700,6 +721,36 @@ class AlunoService
                             ['aluno' => $record]
                         ))
                         ->disabled(fn(Aluno $record) => $record->laudos->isEmpty())
+                ),
+
+            TextColumn::make('laudos_nomes')
+                ->label('Laudos')
+                ->state(function (Aluno $record) {
+                    // Pega os nomes dos laudos vinculados ao aluno
+                    $nomes = $record->laudos
+                        ->pluck('nome')   // Collection de nomes
+                        ->filter()        // remove null / vazios
+                        ->unique()
+                        ->values()
+                        ->all();          // vira array
+
+                    if (empty($nomes)) {
+                        return '-';
+                    }
+
+                    // já devolve a string final
+                    return implode(' | ', $nomes);
+                })
+                ->wrap()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->visible(fn() => $this->userService->podeVerLaudos(Auth::user()))
+                ->searchable(
+                    query: function (Builder $query, string $search): Builder {
+                        // permite buscar pelo nome do laudo
+                        return $query->whereHas('laudos', function (Builder $q) use ($search) {
+                            $q->where('nome', 'like', "%{$search}%");
+                        });
+                    },
                 ),
 
 
@@ -724,9 +775,141 @@ class AlunoService
         return [
             SelectFilter::make('id_escola')
                 ->label('Escola')
-                ->relationship('turma.escola', 'nome'),
+                ->relationship('turma.escola', 'nome')
+                ->searchable()
+                ->columnSpan(2)
+                ->preload(),
+
+            SelectFilter::make('id_serie')
+                ->label('Série')
+                ->relationship('turma.serie', 'nome')
+                ->searchable()
+                ->columnSpan(2)
+                ->preload(),
+
+            Filter::make('idade')
+                ->label('Idade')
+                ->columnSpan(2)
+                ->form([
+                    Grid::make(8)
+                        ->schema([
+                            TextInput::make('idade_min')
+                                ->label('De X anos')
+                                ->numeric()
+                                ->minValue(1)
+                                ->maxValue(25)
+                                ->columnSpan(4),
+
+                            TextInput::make('idade_max')
+                                ->label('Até X anos')
+                                ->numeric()
+                                ->minValue(1)
+                                ->maxValue(25)
+                                ->columnSpan(4),
+                        ]),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    $min = $data['idade_min'] ?? null;
+                    $max = $data['idade_max'] ?? null;
+
+                    if (! filled($min) && ! filled($max)) {
+                        return $query;
+                    }
+
+                    // Ambos preenchidos → intervalo [min, max]
+                    if (filled($min) && filled($max)) {
+                        $min = (int) $min;
+                        $max = (int) $max;
+
+                        // Garante que min <= max mesmo se o usuário inverter
+                        if ($min > $max) {
+                            [$min, $max] = [$max, $min];
+                        }
+
+                        // Ex.: 10–12 anos → datas entre hoje-12 e hoje-10
+                        $start = now()->subYears($max)->startOfDay(); // mais velho (idade_max)
+                        $end   = now()->subYears($min)->endOfDay();   // mais novo (idade_min)
+
+                        return $query->whereBetween('data_nascimento', [$start, $end]);
+                    }
+
+                    // Só idade_min → "a partir de X anos" (>= X)
+                    if (filled($min)) {
+                        $min = (int) $min;
+                        $border = now()->subYears($min)->endOfDay();
+
+                        return $query->whereDate('data_nascimento', '<=', $border);
+                    }
+
+                    // Só idade_max → "até X anos" (<= X)
+                    $max = (int) $max;
+                    $border = now()->subYears($max)->startOfDay();
+
+                    return $query->whereDate('data_nascimento', '>=', $border);
+                })
+                ->indicateUsing(function (array $data): ?string {
+                    $min = $data['idade_min'] ?? null;
+                    $max = $data['idade_max'] ?? null;
+
+                    if (! filled($min) && ! filled($max)) {
+                        return null;
+                    }
+
+                    if (filled($min) && filled($max)) {
+                        if ($min == $max) {
+                            return "{$min} anos";
+                        }
+
+                        // Se usuário inverteu, ajusta só na exibição também
+                        $minInt = (int) $min;
+                        $maxInt = (int) $max;
+
+                        if ($minInt > $maxInt) {
+                            [$minInt, $maxInt] = [$maxInt, $minInt];
+                        }
+
+                        return "De {$minInt} a {$maxInt} anos";
+                    }
+
+                    if (filled($min)) {
+                        return "A partir de {$min} anos";
+                    }
+
+                    return "Até {$max} anos";
+                }),
+            SelectFilter::make('laudos')
+                ->label('Laudo')
+                ->relationship('laudos', 'nome')
+                ->columnSpan(2)
+                ->multiple()
+                ->searchable()
+                ->preload(),
+
+            TernaryFilter::make('tem_laudos')
+                ->label('Crianças com laudos')
+                ->columnSpan(2)
+                ->boolean()
+                ->trueLabel('Apenas com laudos')
+                ->falseLabel('Apenas sem laudos')
+                ->queries(
+                    true: fn(Builder $query) => $query->whereHas('laudos'),
+                    false: fn(Builder $query) => $query->whereDoesntHave('laudos'),
+                ),
+
+            TernaryFilter::make('com_apoio')
+                ->label('Profissional de apoio')
+                ->columnSpan(2)
+                ->boolean()
+                ->trueLabel('Apenas com apoio')
+                ->falseLabel('Apenas sem apoio')
+                ->queries(
+                    true: fn(Builder $query) => $query->whereNotNull('id_professor'),
+                    false: fn(Builder $query) => $query->whereNull('id_professor'),
+                ),
         ];
     }
+
+
 
     private function acoesTabela(): array
     {
@@ -745,7 +928,9 @@ class AlunoService
                 ->label('Exportar XLSX')
                 ->defaultFormat('xlsx')
                 ->formatStates([
-                    'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                    'dificuldade_aprendizagem' => fn($record) => $record->dificuldade_aprendizagem ? 'Sim' : 'Não',
+                    'frequenta_srm'          => fn($record) => $record->frequenta_srm ? 'Sim' : 'Não',
+                    'encaminhado_para_sme'   => fn($record) => $record->encaminhado_para_sme ? 'Sim' : 'Não',
                 ])
                 ->directDownload(),
             FilamentExportBulkAction::make('exportar_pdf')
@@ -753,7 +938,9 @@ class AlunoService
                 ->defaultFormat('pdf')
                 ->color('danger')
                 ->formatStates([
-                    'tem_carteirinha' => fn($record) => $record->tem_carteirinha ? 'Sim' : 'Não',
+                    'dificuldade_aprendizagem' => fn($record) => $record->dificuldade_aprendizagem ? 'Sim' : 'Não',
+                    'frequenta_srm'          => fn($record) => $record->frequenta_srm ? 'Sim' : 'Não',
+                    'encaminhado_para_sme'   => fn($record) => $record->encaminhado_para_sme ? 'Sim' : 'Não',
                 ])
                 ->directDownload(),
         ];

@@ -37,6 +37,14 @@ class CaeiResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $opts = [
+            'Sim, Lista de Espera',
+            'Sim, Em Atendimento',
+            'Sim, Desistente',
+            'Sim, Desligado',
+            'Não',
+        ];
+
         return $table
             ->headerActions([
                 Action::make('total_listado')
@@ -100,9 +108,11 @@ class CaeiResource extends Resource
                     ->label('Fonoaudiólogo')
                     ->badge()
                     ->color(fn(?string $state) => match ($state) {
-                        'Sim' => 'success',
-                        'Lista de Espera' => 'warning',
-                        'Nao' => 'danger',
+
+                        'Sim, Lista de Espera' => 'warning',
+                        'Sim, Em Atendimento' => 'success',
+                        'Sim, Desistente' => 'danger',
+                        'Sim, Desligado' => 'gray',
                         'Não' => 'danger',
                         default => 'secondary',
                     })
@@ -112,9 +122,12 @@ class CaeiResource extends Resource
                     ->label('Psicólogo')
                     ->badge()
                     ->color(fn(?string $state) => match ($state) {
-                        'Sim' => 'success',
-                        'Lista de Espera' => 'warning',
-                        'Nao' => 'danger',
+
+                        'Sim, Lista de Espera' => 'warning',
+                        'Sim, Em Atendimento' => 'success',
+                        'Sim, Desistente' => 'danger',
+                        'Sim, Desligado' => 'gray',
+                        'Não' => 'danger',
                         default => 'secondary',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -123,9 +136,12 @@ class CaeiResource extends Resource
                     ->label('Psicopedagogo')
                     ->badge()
                     ->color(fn(?string $state) => match ($state) {
-                        'Sim' => 'success',
-                        'Lista de Espera' => 'warning',
-                        'Nao' => 'danger',
+
+                        'Sim, Lista de Espera' => 'warning',
+                        'Sim, Em Atendimento' => 'success',
+                        'Sim, Desistente' => 'danger',
+                        'Sim, Desligado' => 'gray',
+                        'Não' => 'danger',
                         default => 'secondary',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -158,25 +174,13 @@ class CaeiResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('status_psicopedagogo')
                     ->label('Psicopedagogo')
-                    ->options([
-                        'Sim' => 'Sim',
-                        'Nao' => 'Não',
-                        'Lista de Espera' => 'Lista de Espera',
-                    ]),
+                    ->options($opts),
                 Tables\Filters\SelectFilter::make('status_psicologo')
                     ->label('Psicólogo')
-                    ->options([
-                        'Sim' => 'Sim',
-                        'Nao' => 'Não',
-                        'Lista de Espera' => 'Lista de Espera',
-                    ]),
+                    ->options($opts),
                 Tables\Filters\SelectFilter::make('status_fonoaudiologo')
                     ->label('Fonoaudiólogo')
-                    ->options([
-                        'Sim' => 'Sim',
-                        'Nao' => 'Não',
-                        'Lista de Espera' => 'Lista de Espera',
-                    ]),
+                    ->options($opts),
             ])
             ->actions([])
             ->bulkActions([
@@ -221,9 +225,6 @@ class CaeiResource extends Resource
     {
         return [
             'index' => Pages\ListCaeis::route('/'),
-            // Se não quiser criar/editar por aqui, pode remover:
-            // 'create' => Pages\CreateCaei::route('/create'),
-            // 'edit' => Pages\EditCaei::route('/{record}/edit'),
         ];
     }
 }
