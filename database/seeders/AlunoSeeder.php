@@ -152,12 +152,12 @@ class AlunoSeeder extends Seeder
 
                 $professorSrm = $professoresDoContexto
                     ? $professoresDoContexto
-                        ->where('professor_srm', true)
-                        ->whenEmpty(function ($col) use ($professoresDoContexto) {
-                            // se não tiver professor_srm, pega qualquer do contexto
-                            return $professoresDoContexto;
-                        })
-                        ->random()
+                    ->where('professor_srm', true)
+                    ->whenEmpty(function ($col) use ($professoresDoContexto) {
+                        // se não tiver professor_srm, pega qualquer do contexto
+                        return $professoresDoContexto;
+                    })
+                    ->random()
                     : null;
 
                 $aluno = Aluno::create([
@@ -174,11 +174,11 @@ class AlunoSeeder extends Seeder
                     'encaminhado_para_especialista' => $encEsp,
                     'status_fonoaudiologo'      => $statusFono,
                     'status_psicologo'          => $statusPsico,
-                    'ja_foi_retido'             => 'Nao', // pode virar 'Sim' abaixo
+                    'ja_foi_retido'             => 'Nao',
                     'status_psicopedagogo'      => $statusPsicoped,
                     'avanco_caei'               => $avancoCaei,
-                    'anexo_laudo_path'          => null,
                 ]);
+
 
                 // ===== Laudos (1 a 3, dependendo) =====
                 if ($laudos->isNotEmpty() && $frequentaSrm && $faker->boolean(70)) {
@@ -222,7 +222,7 @@ class AlunoSeeder extends Seeder
                         'id_serie'     => $turma->id_serie,
                         'vezes_retido' => $vezesSelecionado,
                         'ano_retido'   => $anosRetidos,
-                        'motivo_retido'=> $motivosRetidos,
+                        'motivo_retido' => $motivosRetidos,
                     ]);
 
                     $aluno->update([

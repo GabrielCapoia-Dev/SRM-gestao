@@ -469,26 +469,35 @@ class AlunoService
                             Fieldset::make()
                                 ->columns(12)
                                 ->schema([
-                                    Select::make('laudos')
-                                        ->label('Laudos')
-                                        ->multiple()
-                                        ->relationship('laudos', 'nome')
-                                        ->preload()
-                                        ->searchable()
-                                        ->columnSpan(4),
+                                    Repeater::make('laudosPivot')
+                                        ->label('Laudos + anexos')
+                                        ->relationship('laudosPivot')
+                                        ->defaultItems(0)
+                                        ->collapsible()
+                                        ->columnSpan(12)
+                                        ->columns(12)
+                                        ->schema([
+                                            Select::make('laudo_id')
+                                                ->label('Laudo')
+                                                ->relationship('laudo', 'nome')
+                                                ->searchable()
+                                                ->preload()
+                                                ->required()
+                                                ->columnSpan(4),
 
-                                    FileUpload::make('anexo_laudo_path')
-                                        ->label('Anexo')
-                                        ->helperText('Anexe um pdf com todos os laudos e anexos.')
-                                        ->disk('public')
-                                        ->directory('laudos')
-                                        ->openable()
-                                        ->previewable(false)
-                                        ->acceptedFileTypes(['application/pdf'])
-                                        ->columnSpan(8),
+                                            FileUpload::make('anexo_laudo_path')
+                                                ->label('Arquivo (PDF)')
+                                                ->disk('public')
+                                                ->directory('laudos')
+                                                ->openable()
+                                                ->previewable(false)
+                                                ->acceptedFileTypes(['application/pdf'])
+                                                ->columnSpan(8),
+                                        ]),
                                 ]),
                         ]),
                 ]),
+
 
 
         ];
@@ -681,20 +690,28 @@ class AlunoService
                 })
                 ->toggleable(isToggledHiddenByDefault: true),
 
-            TextColumn::make('laudos.nome')
-                ->badge()
+            TextColumn::make('laudos_count')
                 ->label('Laudos')
-                ->separator(', ')
+                ->tooltip('Clique para ver os laudos')
+                ->state(fn(Aluno $record) => $record->laudos->count())
+                ->formatStateUsing(fn(int $state) => $state > 0 ? $state . ' laudo(s)' : '-')
+                ->toggleable(isToggledHiddenByDefault: false)
+                
+                ->action(
+                    Action::make('ver_laudos')
+                        ->modal()
+                        ->slideOver()
+                        ->modalCancelAction(false)
+                        ->modalSubmitAction(false)
+                        ->modalHeading(fn(Aluno $record) => "Laudos de {$record->nome}")
+                        ->modalContent(fn(Aluno $record) => view(
+                            'components.alunos.laudos-modal',
+                            ['aluno' => $record]
+                        ))
+                        ->disabled(fn(Aluno $record) => $record->laudos->isEmpty())
+                ),
 
-                ->wrap()
-                ->toggleable(isToggledHiddenByDefault: true),
 
-            TextColumn::make('anexo_laudo_path')
-                ->label('Anexo')
-                ->formatStateUsing(fn($state) => $state ? 'Baixar laudo' : '-')
-                ->url(fn($state) => $state ? asset('storage/' . $state) : null)
-                ->openUrlInNewTab()
-                ->icon(fn($state) => $state ? 'heroicon-o-arrow-down-tray' : null),
 
 
             TextColumn::make('created_at')
